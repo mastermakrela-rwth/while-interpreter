@@ -47,7 +47,7 @@
 				class="absolute top-0 left-0 w-full transitions overflow-x-scroll bg-gray-100 bg-opacity-25 py-4"
 				style={expanded ? `left: -${x}px; width: 100dvw` : ''}
 			>
-				<div class="rule">
+				<div class="rule w-min mx-auto">
 					<span />
 					<div class="flex gap-4 mb-6 items-end">
 						{#each tree.premises?.filter(Boolean) ?? [] as premise}

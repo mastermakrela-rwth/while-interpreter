@@ -18,7 +18,15 @@
 	};
 </script>
 
-<div class="flex justify-end items-center mb-4 space-x-3">
+<div class="disclaimer">
+	<span class="font-semibold block mb-1">Disclaimer!</span>
+	<span>
+		Free variables will be detected automatically in the future. Now for sanity of our programmers
+		we ask you to add them manually. :)
+	</span>
+</div>
+
+<div class="flex justify-end items-center my-4 space-x-3">
 	<label for="name" class="text-gray-300"> Identifier: </label>
 	<input
 		type="text"
@@ -34,20 +42,12 @@
 	</button>
 </div>
 
-<div class="disclaimer">
-	<span class="font-semibold block mb-1">Disclaimer!</span>
-	<span>
-		Free variables will be detected automatically in the future. Now for sanity of our programmers
-		we ask you to add them manually. :)
-	</span>
-</div>
-
 {#each Object.entries(free_variables) as [name, value], i}
 	<div class="flex justify-between items-center my-4">
 		<div class="flex gap-1 items-center">
 			<Katex math={`${name} :=`} />
 			<input
-				type="text"
+				type="number"
 				bind:value={free_variables[name]}
 				class="border px-4 py-1 rounded-full text-sm text-black"
 			/>
