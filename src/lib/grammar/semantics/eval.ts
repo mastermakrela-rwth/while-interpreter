@@ -1,47 +1,41 @@
-import type { NonterminalNode } from 'ohm-js';
-
-interface _NonterminalNode extends NonterminalNode {
-	args: {
-		vars: Vars;
-		trace: Vars[];
-	};
-}
+type Args = {
+	vars: Vars;
+	trace: Vars[];
+	free_vars: string[];
+};
 
 const program: Partial<WHILEActionDict<EvalResult>> = {
 	Program(cmd) {
-		cmd._eval(this.args.vars, this.args.trace);
-		this.args.trace.push({ ...this.args.vars });
+		const { vars, trace, free_vars } = this.args.args as Args;
+
+		cmd._eval(this.args.args);
+
+		trace.push({ ...vars });
 		return {
-			result: this.args.vars,
-			trace: this.args.trace
+			result: vars,
+			trace,
+			free_vars
 		};
 	}
 };
 
 const cmd: Partial<WHILEActionDict<void>> = {
 	Cmd_seq(c1, _, c2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-
-		c1._eval(vars, trace);
-		c2._eval(vars, trace);
+		c1._eval(this.args.args);
+		c2._eval(this.args.args);
 	},
 	Cmd_if(_, cond, __, then, ___, _else, ____) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-
-		cond._eval(vars, trace) ? then._eval(vars, trace) : _else._eval(vars, trace);
+		cond._eval(this.args.args) ? then._eval(this.args.args) : _else._eval(this.args.args);
 	},
 	Cmd_while(_, cond, __, body, ___) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-
-		while (cond._eval(vars, trace)) {
-			body._eval(vars, trace);
+		while (cond._eval(this.args.args)) {
+			body._eval(this.args.args);
 		}
 	},
 	Cmd_assign(name, _, expr) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-
+		const { vars, trace } = this.args.args as Args;
 		trace.push({ ...vars });
-		vars[name.sourceString] = expr._eval(vars, trace);
+		vars[name.sourceString] = expr._eval(this.args.args);
 	},
 	Cmd_skip(_) {
 		return;
@@ -50,71 +44,56 @@ const cmd: Partial<WHILEActionDict<void>> = {
 
 const boolean_exp: Partial<WHILEActionDict<boolean>> = {
 	BExp_and(b1, _, b2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-
 		// we evaluate both because one of our assumptions is that bool expressions are strict
 		// i.e., always evaluate both arguments
-		const cond1 = b1._eval(vars, trace);
-		const cond2 = b2._eval(vars, trace);
+		const cond1 = b1._eval(this.args.args);
+		const cond2 = b2._eval(this.args.args);
 		return cond1 && cond2;
 	},
 	BExp_or(b1, _, b2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-
 		// we evaluate both because one of our assumptions is that bool expressions are strict
 		// i.e., always evaluate both arguments
-		const cond1 = b1._eval(vars, trace);
-		const cond2 = b2._eval(vars, trace);
+		const cond1 = b1._eval(this.args.args);
+		const cond2 = b2._eval(this.args.args);
 		return cond1 || cond2;
 	},
 	BExp_not(_, b) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return !b._eval(vars, trace);
+		return !b._eval(this.args.args);
 	},
 
 	PriBExp_paren(_, a, __) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a._eval(vars, trace);
+		return a._eval(this.args.args);
 	},
 
 	PriBExp_eq(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) === a2._eval(vars, trace);
+		return a1._eval(this.args.args) === a2._eval(this.args.args);
 	},
 	PriBExp_gt(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) > a2._eval(vars, trace);
+		return a1._eval(this.args.args) > a2._eval(this.args.args);
 	},
 	PriBExp_lt(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) < a2._eval(vars, trace);
+		return a1._eval(this.args.args) < a2._eval(this.args.args);
 	},
 	PriBExp_geq(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) >= a2._eval(vars, trace);
+		return a1._eval(this.args.args) >= a2._eval(this.args.args);
 	},
 	PriBExp_leq(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) <= a2._eval(vars, trace);
+		return a1._eval(this.args.args) <= a2._eval(this.args.args);
 	}
 };
 
 const arithmetic_exp: Partial<WHILEActionDict<number>> = {
 	AExp_add(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) + a2._eval(vars, trace);
+		return a1._eval(this.args.args) + a2._eval(this.args.args);
 	},
 	AExp_sub(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) - a2._eval(vars, trace);
+		return a1._eval(this.args.args) - a2._eval(this.args.args);
 	},
 	AExp_mul(a1, _, a2) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a1._eval(vars, trace) * a2._eval(vars, trace);
+		return a1._eval(this.args.args) * a2._eval(this.args.args);
 	},
 	PriAExp_paren(_, a, __) {
-		const { vars, trace } = (this as _NonterminalNode).args;
-		return a._eval(vars, trace);
+		return a._eval(this.args.args);
 	}
 };
 
@@ -135,12 +114,19 @@ const number: Partial<WHILEActionDict<number>> = {
 
 const variable: Partial<WHILEActionDict<number>> = {
 	var(name) {
-		return this.args.vars[name.sourceString];
+		const { vars, free_vars } = this.args.args as Args;
+
+		// we assume that the variable is free if it's accessed before being assigned
+		if (vars[name.sourceString] === undefined) {
+			free_vars.push(name.sourceString);
+		}
+
+		return vars[name.sourceString];
 	}
 };
 
 const _eval_semantics: SemanticsOperation<any> = {
-	name: '_eval(vars, trace)',
+	name: '_eval(args)',
 	actions: {
 		...program,
 		...cmd,
@@ -153,20 +139,39 @@ const _eval_semantics: SemanticsOperation<any> = {
 };
 
 const eval_semantics: SemanticsOperation<EvalResult> = {
-	name: 'eval()',
+	name: 'eval(default_values)',
 	actions: {
 		Program(_) {
-			const vars: Vars = {};
+			const default_values = this.args.default_values;
+			const vars: Vars = { ...default_values };
 			const trace: Vars[] = [];
+			const free_vars: string[] = [];
 
-			this._eval(vars, trace);
+			this._eval({ vars, trace, free_vars });
 
 			return {
 				result: vars,
-				trace: trace
+				trace: trace,
+				free_vars
 			};
 		}
 	}
 };
 
-export const eval_operations = [_eval_semantics, eval_semantics];
+// TODO: needs it's own semantics
+const free_vars_semantics: SemanticsOperation<string[]> = {
+	name: 'free_vars()',
+	actions: {
+		Program(_) {
+			const vars: Vars = {};
+			const trace: Vars[] = [];
+			const free_vars: string[] = [];
+
+			this._eval({ vars, trace, free_vars });
+
+			return free_vars;
+		}
+	}
+};
+
+export const eval_operations = [_eval_semantics, eval_semantics, free_vars_semantics];

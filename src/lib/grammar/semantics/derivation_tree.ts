@@ -28,10 +28,6 @@ const condition2 = (cond: string) => String.raw`\text{if } ${cond}`;
 
 const program: Partial<WHILEActionDict<Derivation>> = {
 	Program(_) {
-		if (_.ctorName === 'Cmd') {
-			throw new Error('Not implemented');
-		}
-
 		const vars: Vars = { ...this.args.stuff };
 		const var_gen = new VariableGenerator();
 
@@ -39,13 +35,13 @@ const program: Partial<WHILEActionDict<Derivation>> = {
 			throw new Error('Programs with more than one command are not supported');
 		}
 
-		this._eval(vars, []);
+		this._eval({ vars, trace: [], free_vars: [] });
 
 		const z = var_gen.gen('z');
 		const args: Stuff = { vars, var_gen, out_var: z };
 		return this.child(0).derivation_tree(args);
 
-		// TODO: maybe add a rule for the program node
+		// TODO: add a rule for the program node
 		return {
 			name: this.ctorName,
 			// premises: [this.child(0).derivation_tree({ vars, variable_gen })],
@@ -79,16 +75,17 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 	// 		body._eval(vars, trace);
 	// 	}
 	// },
-	// Cmd_assign(name, _, expr) {
-	// 	return {
-	// 		name: this.ctorName,
-	// 		premises: [expr.derivation_tree(this.args.stuff)],
-	// 		conclusion: {
-	// 			source: '',
-	// 			rule: ''
-	// 		}
-	// 	};
-	// },
+	Cmd_assign(name, _, expr) {
+		return expr.derivation_tree(this.args.stuff);
+		return {
+			name: this.ctorName,
+			premises: [expr.derivation_tree(this.args.stuff)],
+			conclusion: {
+				source: '',
+				rule: ''
+			}
+		};
+	}
 	// Cmd_skip(_) {
 	// 	return {
 	// 		name: this.ctorName,
@@ -123,7 +120,7 @@ const interpret_bool = (_this: NonterminalNode, b_exp: NonterminalNode) => {
 
 	const { vars, var_gen, out_var } = _this.args.stuff as Stuff;
 	const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
-	const value = b_exp._eval(vars, []);
+	const value = b_exp._eval({ vars, trace: [], free_vars: [] });
 	let cond = `${z_1} ${operator_to_tex[operator.sourceString]} ${z_2}`;
 	if (!value) {
 		cond = `\\neg (${cond})`;
@@ -153,7 +150,7 @@ const boolean_exp: Partial<WHILEActionDict<Derivation>> = {
 	BExp_not(_, b_exp) {
 		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
 		const [b] = var_gen.genList(['b']);
-		const value = this._eval(vars, []);
+		const value = this._eval({ vars, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -185,7 +182,7 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 	AExp_add(a1, _, a2) {
 		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
-		const value = this._eval(vars, []);
+		const value = this._eval({ vars, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -203,7 +200,7 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 	AExp_sub(a1, _, a2) {
 		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z', 'z']);
-		const value = this._eval(vars, []);
+		const value = this._eval({ vars, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -222,7 +219,7 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
 
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
-		const value = this._eval(vars, []);
+		const value = this._eval({ vars, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -245,7 +242,7 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 const bool: Partial<WHILEActionDict<Derivation>> = {
 	bool(arg0) {
 		const { vars, out_var } = this.args.stuff as Stuff;
-		const value = this._eval(vars, []);
+		const value = this._eval({ vars, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -261,7 +258,7 @@ const bool: Partial<WHILEActionDict<Derivation>> = {
 const number: Partial<WHILEActionDict<Derivation>> = {
 	number(arg0) {
 		const { vars, out_var } = this.args.stuff as Stuff;
-		const value = this._eval(vars, []);
+		const value = this._eval({ vars, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -277,7 +274,7 @@ const number: Partial<WHILEActionDict<Derivation>> = {
 const variable: Partial<WHILEActionDict<Derivation>> = {
 	var(name) {
 		const { vars, out_var } = this.args.stuff as Stuff;
-		const value = this._eval(vars, []);
+		const value = this._eval({ vars, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,

@@ -17,7 +17,11 @@ declare global {
 
 	type Vars = { [key: string]: number };
 	type DerivationTree = Derivation;
-	type EvalResult = { result: Vars; trace: Vars[] };
+	type EvalResult = {
+		result: Vars;
+		trace: Vars[];
+		free_vars: string[];
+	};
 
 	type InterpretationResult = { eval: EvalResult; tree?: DerivationTree };
 

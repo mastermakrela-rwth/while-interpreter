@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { interpret_while } from '$lib/grammar';
+	import { dev } from '$app/environment';
 	import Katex from '$lib/Katex.svelte';
+	import { eval_while, get_derivation_tree, get_free_vars, parse_while } from '$lib/grammar';
 	import MonacoEditor from '$lib/monaco/MonacoEditor.svelte';
 	import { fade, slide } from 'svelte/transition';
-	import type { Snapshot } from './$types';
+	import FreeVars from './FreeVars.svelte';
 	import Trace from './Trace.svelte';
 	import Tree from './Tree.svelte';
-	import FreeVars from './FreeVars.svelte';
 
 	const default_program = `
 x := 6;
@@ -34,6 +34,9 @@ end
 `;
 
 	const equation_program = `
+z := (x+3) * (y-2)
+`;
+	const equation_derivation_program = `
 (2 - -4) * (11 - y)
 `;
 
@@ -41,29 +44,27 @@ end
 !1=1 || (true && 3 <= 4) 
 `;
 
-	let input = default_program;
-	let interpretation: Interpretation;
-	let last_result: InterpretationResult | undefined = undefined;
+	let input = equation_program;
 	let show_trace = false;
-	let free_variables: Record<string, number> = {};
 
-	$: if (input) {
-		interpretation = interpret_while(input, free_variables);
-		if (interpretation.success) last_result = interpretation.result;
-	}
-
-	export const snapshot: Snapshot = {
-		capture: () => {
-			return { input, show_trace };
-		},
-		restore: ({ input, show_trace }) => {
-			input = input;
-			show_trace = show_trace;
-		}
-	};
-
-	$: result = interpretation.success ? interpretation.result : last_result;
 	$: contains_while = input.includes('while');
+
+	$: parsed = parse_while(input);
+
+	let free_variables: string[] = [];
+	$: if (parsed.success) free_variables = [...get_free_vars(parsed.result!)];
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:55 ~ free_variables:', free_variables);
+
+	let default_values: Record<string, number> = { x: 3, y: 9 };
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:58 ~ default_values:', default_values);
+
+	let eval_results: EvalResult | undefined = undefined;
+	$: if (parsed.success) eval_results = eval_while(parsed.result!, default_values);
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:59 ~ eval_results:', eval_results);
+
+	let derivation: DerivationTree | undefined = undefined;
+	$: if (parsed.success) derivation = get_derivation_tree(parsed.result!, default_values);
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:67 ~ derivation:', derivation);
 </script>
 
 <div class="h-[384px]">
@@ -75,6 +76,9 @@ end
 	<button class="btn" on:click={() => (input = default_program)}> 42 </button>
 	<button class="btn" on:click={() => (input = fibonacci_program)}> Fibonacci </button>
 	<button class="btn" on:click={() => (input = equation_program)}> Equation </button>
+	<button class="btn" on:click={() => (input = equation_derivation_program)}>
+		Equation Derivation
+	</button>
 	<button class="btn" on:click={() => (input = bool_equation_program)}> Boolean Equation </button>
 </div>
 
@@ -89,82 +93,80 @@ end
 	</div>
 {/if}
 
-{#if interpretation}
-	{#if !interpretation.success}
-		<div transition:slide>
-			<h3>Something went wrong!</h3>
-			<pre class="error">{interpretation.message}</pre>
+{#if !parsed.success}
+	<div transition:slide>
+		<h3>Something went wrong!</h3>
+		<pre class="error">{parsed.message}</pre>
+	</div>
+{/if}
+
+{#if free_variables.length > 0}
+	<div transition:fade>
+		<h4>Free Variables</h4>
+
+		{#key free_variables.join('@')}
+			<FreeVars defaults={free_variables} bind:free_variables={default_values} />
+		{/key}
+	</div>
+{/if}
+
+{#if eval_results}
+	<h3>Results</h3>
+
+	<h4>
+		<span> Final State </span>
+		<span class="ml-4 text-gray-300">
+			( <Katex math="\sigma(Var)" /> )
+		</span>
+	</h4>
+
+	<Trace trace={[eval_results.result]} />
+
+	<h4>
+		<span> Execution trace </span>
+		<span class="ml-4 text-gray-300">
+			( <Katex math="\Sigma" /> )
+		</span>
+	</h4>
+
+	<div class="flex justify-between items-center">
+		<p>{eval_results.trace.length} Steps</p>
+
+		<button
+			class="border px-4 py-1 rounded-full text-sm"
+			on:click={() => (show_trace = !show_trace)}
+		>
+			{#if show_trace}
+				Hide trace
+			{:else}
+				Show trace
+			{/if}
+		</button>
+	</div>
+
+	{#if show_trace}
+		<div transition:slide={{ duration: 1000 }}>
+			<Trace show_steps trace={eval_results.trace} />
 		</div>
 	{/if}
+{/if}
 
-	{#if result}
-		{#if !result.tree}
-			<h4>
-				<span>
-					{#if !interpretation.success}Last{/if}
-					Final State
-				</span>
-				<span class="ml-4 text-gray-300">
-					( <Katex math="\sigma(Var)" /> )
-				</span>
-			</h4>
+{#if derivation}
+	<h3>Derivation</h3>
 
-			<Trace trace={[result.eval.result]} />
+	<h4>Derivation Tree</h4>
 
-			<h4>
-				<span>
-					{#if !interpretation.success}Last{/if}
-					Execution trace
-				</span>
-				<span class="ml-4 text-gray-300">
-					( <Katex math="\Sigma" /> )
-				</span>
-			</h4>
+	<div class="disclaimer">
+		<span class="font-semibold block mb-1">Disclaimer!</span>
+		<span>
+			For now Derivation Trees work for Arithmetic and Boolean Expressions only. We need to add
+			proper Commands rules.
+		</span>
+	</div>
 
-			<div class="flex justify-between items-center">
-				<p>{result.eval.trace.length} Steps</p>
-
-				<button
-					class="border px-4 py-1 rounded-full text-sm"
-					on:click={() => (show_trace = !show_trace)}
-				>
-					{#if show_trace}
-						Hide trace
-					{:else}
-						Show trace
-					{/if}
-				</button>
-			</div>
-
-			{#if show_trace}
-				<div transition:slide={{ duration: 1000 }}>
-					<Trace show_steps trace={result.eval.trace} />
-				</div>
-			{/if}
-		{:else}
-			<h3>
-				{#if !interpretation.success}Last{/if}
-				Results
-			</h3>
-
-			<h4>
-				<span> Free Variables </span>
-			</h4>
-
-			<FreeVars bind:free_variables />
-
-			<h4>
-				<span>
-					{#if !interpretation.success}Last{/if}
-					Derivation Tree
-				</span>
-			</h4>
-
-			<div class="not-prose">
-				<Tree tree={result.tree} />
-			</div>
-		{/if}
-	{/if}
+	<div class="not-prose">
+		<Tree tree={derivation} />
+	</div>
 {/if}
 
 <style lang="postcss">
