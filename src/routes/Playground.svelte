@@ -41,7 +41,7 @@ end
 !1=1 || (true && 3 <= 4) 
 `;
 
-	let input = '(x+3)*(y-2)'; // default_program;
+	let input = default_program;
 	let interpretation: Interpretation;
 	let last_result: InterpretationResult | undefined = undefined;
 	let show_trace = false;
