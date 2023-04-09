@@ -1,10 +1,14 @@
 <script lang="ts">
-	import type { Result } from '$lib/grammar/while_implementation';
+	import Katex from '$lib/Katex.svelte';
 
-	export let trace: Result[];
+	export let trace: Vars[];
 	export let show_steps = false;
 
 	$: variables = [...new Set(trace.flatMap((r) => Object.keys(r)))];
+
+	const get_row_variables = (row: Vars) => {
+		return [...new Set(Object.keys(row))];
+	};
 </script>
 
 <div class="overflow-x-scroll">
@@ -13,21 +17,33 @@
 			<tr>
 				{#if show_steps}
 					<th class="text-left w-min"> Step </th>
+					<th />
 				{/if}
 				{#each variables as variable}
 					<th>
 						<code>{variable}</code>
 					</th>
 				{/each}
+				{#if show_steps}
+					<th />
+				{/if}
 			</tr>
 		</thead>
 		{#each trace as row, idx}
 			<tr class="odd:bg-white even:bg-gray-50 odd:dark:bg-gray-800 even:dark:bg-gray-700">
 				{#if show_steps}
-					<td class="text-left w-min">
-						<span class="ml-2 text-gray-400">
-							{idx}
+					{@const row_variables = get_row_variables(row)}
+					<td>
+						<span class="text-gray-400">
+							{idx}.
 						</span>
+					</td>
+					<td class="text-right">
+						{#if row_variables.length <= 0}
+							<Katex math={String.raw`\sigma(\empty) = \{`} />
+						{:else}
+							<Katex math={String.raw`\sigma(\{${row_variables}\}) = \{`} />
+						{/if}
 					</td>
 				{/if}
 				{#each variables as variable}
@@ -37,6 +53,11 @@
 						<var class:changed={previous_value !== current_value}> {current_value} </var>
 					</td>
 				{/each}
+				{#if show_steps}
+					<td class="text-left">
+						<Katex math={String.raw`\}`} />
+					</td>
+				{/if}
 			</tr>
 		{/each}
 	</table>

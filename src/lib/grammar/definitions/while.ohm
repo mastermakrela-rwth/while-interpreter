@@ -1,0 +1,50 @@
+WHILE {
+	Program = Cmd | BExp | AExp
+
+	Cmd	(commands / statements)
+		= Cmd ";" Cmd							-- seq
+		| "if" BExp "then" Cmd "else" Cmd "end"	-- if
+		| "while" BExp "do" Cmd "end"			-- while
+		| var ":=" AExp							-- assign
+		| "skip"								-- skip
+
+	BExp
+		= BExp "&&" BExp	-- and
+		| BExp "||" BExp	-- or
+        | "!" PriBExp		-- not
+        | PriBExp
+
+	PriBExp
+		= "(" BExp ")"		-- paren
+		| "&&" PriBExp		-- and
+		| "||" PriBExp		-- or
+		| AExp "=" AExp		-- eq
+		| AExp ">" AExp		-- gt
+		| AExp "<" AExp		-- lt
+		| AExp ">=" AExp	-- geq
+		| AExp "<=" AExp	-- leq
+		| bool
+
+	AExp (arithmetic expressions)
+		= AExp "+" AExp		-- add
+		| AExp "-" AExp		-- sub
+		| AExp "*" PriAExp	-- mul
+		| PriAExp
+
+	PriAExp
+		= "(" AExp ")"		-- paren
+		| "+" PriAExp		-- pos
+		| var
+		| number
+
+	bool (a bool value)
+		= "true" ~var
+		| "false" ~var
+
+	var  (a variable)
+		= letter+
+
+	number	(positive and negative integers)
+		= "-" digit+	--negative
+		| digit+		--positive
+}

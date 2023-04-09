@@ -560,3 +560,15 @@ code::after {
 var {
 	@apply font-mono;
 }
+
+.disclaimer::before {
+	content: '';
+	@apply absolute inset-0 -z-10;
+	@apply w-full h-full bg-yellow-600 bg-opacity-25;
+}
+.disclaimer {
+	@apply relative z-10;
+	@apply text-xs italic;
+	@apply my-2 p-2 pl-3  bg-slate-700;
+	@apply border-l-4 border-yellow-600;
+}

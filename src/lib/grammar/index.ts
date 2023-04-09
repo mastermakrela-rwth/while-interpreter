@@ -1,11 +1,13 @@
-import grammar from './while.ohm-bundle';
-import { semantics, type ExpResult } from './while_implementation';
+import grammar from './definitions/while.ohm-bundle';
+import { derivation_tree_operations } from './semantics/derivation_tree';
+import { eval_operations } from './semantics/eval';
 
-type Success = { success: true; result: ExpResult };
-type Failure = { success: false; message?: string };
-export type Interpretation = Success | Failure;
+const semantics = grammar.createSemantics();
 
-export const interpret_while = (program: string): Interpretation => {
+eval_operations.forEach(({ name, actions }) => semantics.addOperation(name, actions));
+derivation_tree_operations.forEach(({ name, actions }) => semantics.addOperation(name, actions));
+
+export const interpret_while = (program: string, default_vars: Vars): Interpretation => {
 	const m = grammar.match(program);
 
 	if (m.failed()) {
@@ -13,8 +15,14 @@ export const interpret_while = (program: string): Interpretation => {
 	}
 
 	try {
-		const result = semantics(m).eval() as ExpResult;
-		return { success: true, result };
+		const eval_result = semantics(m).eval() as EvalResult;
+		let tree = undefined;
+		try {
+			tree = semantics(m).derivation_tree(default_vars);
+			// eslint-disable-next-line no-empty
+		} catch (e) {}
+
+		return { success: true, result: { eval: eval_result, tree } };
 	} catch (e) {
 		const error = e as Error;
 		return { success: false, message: error.message };
