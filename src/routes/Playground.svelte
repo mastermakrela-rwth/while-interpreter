@@ -22,6 +22,17 @@ while x > 0 do
 end
 `;
 
+	const free_vars_42 = `
+while x > 0 do
+	x := x - 1;
+	v := y;
+	while v > 0 do
+		v := v - 1;
+		z := z + 1
+	end
+end
+`;
+
 	const fibonacci_program = `
 x := 0;
 y := 1;
@@ -44,7 +55,8 @@ z := (x+3) * (y-2)
 !1=1 || (true && 3 <= 4) 
 `;
 
-	let input = equation_program;
+	let input = free_vars_42;
+	equation_derivation_program;
 	let show_trace = false;
 
 	$: contains_while = input.includes('while');
@@ -73,10 +85,35 @@ z := (x+3) * (y-2)
 
 <div class="my-4 flex flex-wrap items-center gap-2 text-sm">
 	<span>Example programs:</span>
-	<button class="btn" on:click={() => (input = default_program)}> 42 </button>
-	<button class="btn" on:click={() => (input = fibonacci_program)}> Fibonacci </button>
-	<button class="btn" on:click={() => (input = equation_program)}> Equation </button>
-	<button class="btn" on:click={() => (input = equation_derivation_program)}>
+	<button
+		class="btn"
+		class:active={input === default_program}
+		on:click={() => (input = default_program)}
+	>
+		42
+	</button>
+	<button class="btn" class:active={input === free_vars_42} on:click={() => (input = free_vars_42)}>
+		42 (Free Variables)
+	</button>
+	<button
+		class="btn"
+		class:active={input === fibonacci_program}
+		on:click={() => (input = fibonacci_program)}
+	>
+		Fibonacci
+	</button>
+	<button
+		class="btn"
+		class:active={input === equation_program}
+		on:click={() => (input = equation_program)}
+	>
+		Equation
+	</button>
+	<button
+		class="btn"
+		class:active={input === equation_derivation_program}
+		on:click={() => (input = equation_derivation_program)}
+	>
 		Equation Derivation
 	</button>
 	<button class="btn" on:click={() => (input = bool_equation_program)}> Boolean Equation </button>
@@ -151,11 +188,11 @@ z := (x+3) * (y-2)
 	{/if}
 {/if}
 
-{#if derivation}
-	<h3>Derivation</h3>
+<h3>Derivation</h3>
 
-	<h4>Derivation Tree</h4>
+<h4>Derivation Tree</h4>
 
+{#if !derivation}
 	<div class="disclaimer">
 		<span class="font-semibold block mb-1">Disclaimer!</span>
 		<span>
@@ -163,7 +200,7 @@ z := (x+3) * (y-2)
 			proper Commands rules.
 		</span>
 	</div>
-
+{:else}
 	<div class="not-prose">
 		<Tree tree={derivation} />
 	</div>
@@ -185,5 +222,9 @@ z := (x+3) * (y-2)
 		@apply rounded-full;
 		@apply hover:bg-slate-600;
 		@apply focus:outline-none focus:ring-2 focus:ring-slate-600;
+	}
+
+	.btn.active {
+		@apply bg-rwthBlue;
 	}
 </style>

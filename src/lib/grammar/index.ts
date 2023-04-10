@@ -21,7 +21,7 @@ export const parse_while = (program: string) => {
 };
 
 export const get_free_vars = (m: MatchResult): string[] => {
-	return semantics(m).free_vars();
+	return semantics(m).free_vars({});
 };
 
 export const eval_while = (m: MatchResult, default_vars: Vars): EvalResult => {
@@ -35,7 +35,7 @@ export const get_derivation_tree = (
 	try {
 		return semantics(m).derivation_tree(default_vars);
 	} catch (e) {
-		console.error('get_derivation_tree', e);
+		console.warn('get_derivation_tree', e);
 		return undefined;
 	}
 };

@@ -158,20 +158,20 @@ const eval_semantics: SemanticsOperation<EvalResult> = {
 	}
 };
 
-// TODO: needs it's own semantics
-const free_vars_semantics: SemanticsOperation<string[]> = {
-	name: 'free_vars()',
-	actions: {
-		Program(_) {
-			const vars: Vars = {};
-			const trace: Vars[] = [];
-			const free_vars: string[] = [];
+// // TODO: needs it's own semantics
+// const free_vars_semantics: SemanticsOperation<string[]> = {
+// 	name: 'free_vars()',
+// 	actions: {
+// 		Program(_) {
+// 			const vars: Vars = {};
+// 			const trace: Vars[] = [];
+// 			const free_vars: string[] = [];
 
-			this._eval({ vars, trace, free_vars });
+// 			this._eval({ vars, trace, free_vars });
 
-			return free_vars;
-		}
-	}
-};
+// 			return free_vars;
+// 		}
+// 	}
+// };
 
-export const eval_operations = [_eval_semantics, eval_semantics, free_vars_semantics];
+export const eval_operations = [_eval_semantics, eval_semantics];

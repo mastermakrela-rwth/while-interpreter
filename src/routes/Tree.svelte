@@ -2,7 +2,7 @@
 	import Katex from '$lib/Katex.svelte';
 
 	export let tree: DerivationTree;
-	export let root: boolean = true;
+	export let root = true;
 	export let with_rules = true;
 
 	let bg_div: HTMLDivElement;

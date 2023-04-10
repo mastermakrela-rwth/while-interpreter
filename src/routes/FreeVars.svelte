@@ -10,7 +10,7 @@
 	}, {});
 </script>
 
-<div class="my-4 grid grid-cols-3 gap-4">
+<div class="my-4 grid grid-cols-1 md:grid-cols-3 gap-4 justify-items-center">
 	{#each Object.entries(free_variables) as [name, value], i}
 		<div class="flex gap-1 items-center">
 			<Katex math={`${name} :=`} />
@@ -21,12 +21,4 @@
 			/>
 		</div>
 	{/each}
-</div>
-
-<div class="disclaimer">
-	<span class="font-semibold block mb-1">Disclaimer!</span>
-	<span>
-		For now Free Variables work for Arithmetic Expressions only (And if you're lucky maybe somewhere
-		else too). We need to add proper handling of Commands.
-	</span>
 </div>
