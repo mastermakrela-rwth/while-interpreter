@@ -55,5 +55,5 @@
 		</div>
 	</div>
 {:else}
-	<div bind:this={divEl} class="flex-1 overflow-hidden h-full" />
+	<div bind:this={divEl} class="flex-1 overflow-hidden h-full bg-[#1e1e1e]" />
 {/if}

@@ -1,20 +1,25 @@
+type Procedure = {
+	name: string;
+	args: string[];
+	body: any; // TODO: figure this out
+};
+
 type Args = {
 	vars: Vars;
+	procedures: Record<string, Procedure>;
 	trace: Vars[];
-	free_vars: string[];
 };
 
 const program: Partial<WHILEActionDict<EvalResult>> = {
 	Program(cmd) {
-		const { vars, trace, free_vars } = this.args.args as Args;
+		const { vars, trace } = this.args.args as Args;
 
 		cmd._eval(this.args.args);
 
 		trace.push({ ...vars });
 		return {
 			result: vars,
-			trace,
-			free_vars
+			trace
 		};
 	}
 };
@@ -114,12 +119,7 @@ const number: Partial<WHILEActionDict<number>> = {
 
 const variable: Partial<WHILEActionDict<number>> = {
 	var(name) {
-		const { vars, free_vars } = this.args.args as Args;
-
-		// we assume that the variable is free if it's accessed before being assigned
-		if (vars[name.sourceString] === undefined) {
-			free_vars.push(name.sourceString);
-		}
+		const { vars } = this.args.args as Args;
 
 		return vars[name.sourceString];
 	}
@@ -145,33 +145,15 @@ const eval_semantics: SemanticsOperation<EvalResult> = {
 			const default_values = this.args.default_values;
 			const vars: Vars = { ...default_values };
 			const trace: Vars[] = [];
-			const free_vars: string[] = [];
 
-			this._eval({ vars, trace, free_vars });
+			this._eval({ vars, trace });
 
 			return {
 				result: vars,
-				trace: trace,
-				free_vars
+				trace: trace
 			};
 		}
 	}
 };
-
-// // TODO: needs it's own semantics
-// const free_vars_semantics: SemanticsOperation<string[]> = {
-// 	name: 'free_vars()',
-// 	actions: {
-// 		Program(_) {
-// 			const vars: Vars = {};
-// 			const trace: Vars[] = [];
-// 			const free_vars: string[] = [];
-
-// 			this._eval({ vars, trace, free_vars });
-
-// 			return free_vars;
-// 		}
-// 	}
-// };
 
 export const eval_operations = [_eval_semantics, eval_semantics];

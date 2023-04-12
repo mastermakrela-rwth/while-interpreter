@@ -14,7 +14,21 @@
 	<slot />
 
 	<footer>
-		Crated by: <a href="https://github.com/mastermakrela">mastermakrela</a>
+		<p>Crated by: <a href="https://github.com/mastermakrela">mastermakrela</a></p>
+		<p>
+			Based on Uni Course <a href="https://moves.rwth-aachen.de/teaching/ss-23/savos/">
+				Semantics and Verification of Software
+			</a> in Summer Semester 2023
+		</p>
+		<p>
+			Using wonderful <a href="https://ohmjs.org/">Ohm.js</a> and
+			<a href="https://kit.svelte.dev/">SvelteKit</a>. (Full tech stack is a TODO.)
+		</p>
+		<p>
+			You can find the code in GitHub <a
+				href="https://github.com/mastermakrela-rwth/while-interpreter">here</a
+			>.
+		</p>
 	</footer>
 </div>
 

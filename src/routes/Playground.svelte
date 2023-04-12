@@ -7,56 +7,9 @@
 	import FreeVars from './FreeVars.svelte';
 	import Trace from './Trace.svelte';
 	import Tree from './Tree.svelte';
+	import { programs } from './example_programs';
 
-	const default_program = `
-x := 6;
-y := 7;
-z := 0;
-while x > 0 do
-	x := x - 1;
-	v := y;
-	while v > 0 do
-		v := v - 1;
-		z := z + 1
-	end
-end
-`;
-
-	const free_vars_42 = `
-while x > 0 do
-	x := x - 1;
-	v := y;
-	while v > 0 do
-		v := v - 1;
-		z := z + 1
-	end
-end
-`;
-
-	const fibonacci_program = `
-x := 0;
-y := 1;
-z := 0;
-while x < 100 do
-	z := x + y;
-	x := y;
-	y := z
-end
-`;
-
-	const equation_program = `
-z := (x+3) * (y-2)
-`;
-	const equation_derivation_program = `
-(2 - -4) * (11 - y)
-`;
-
-	const bool_equation_program = `
-!1=1 || (true && 3 <= 4) 
-`;
-
-	let input = free_vars_42;
-	equation_derivation_program;
+	let input = programs[0].code;
 	let show_trace = false;
 
 	$: contains_while = input.includes('while');
@@ -85,38 +38,15 @@ z := (x+3) * (y-2)
 
 <div class="my-4 flex flex-wrap items-center gap-2 text-sm">
 	<span>Example programs:</span>
-	<button
-		class="btn"
-		class:active={input === default_program}
-		on:click={() => (input = default_program)}
-	>
-		42
-	</button>
-	<button class="btn" class:active={input === free_vars_42} on:click={() => (input = free_vars_42)}>
-		42 (Free Variables)
-	</button>
-	<button
-		class="btn"
-		class:active={input === fibonacci_program}
-		on:click={() => (input = fibonacci_program)}
-	>
-		Fibonacci
-	</button>
-	<button
-		class="btn"
-		class:active={input === equation_program}
-		on:click={() => (input = equation_program)}
-	>
-		Equation
-	</button>
-	<button
-		class="btn"
-		class:active={input === equation_derivation_program}
-		on:click={() => (input = equation_derivation_program)}
-	>
-		Equation Derivation
-	</button>
-	<button class="btn" on:click={() => (input = bool_equation_program)}> Boolean Equation </button>
+	{#each programs as program}
+		<button
+			class="btn"
+			class:active={input === program.code}
+			on:click={() => (input = program.code)}
+		>
+			{program.name}
+		</button>
+	{/each}
 </div>
 
 {#if contains_while}

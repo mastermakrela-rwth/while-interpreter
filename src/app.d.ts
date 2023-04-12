@@ -8,6 +8,11 @@ declare global {
 		// interface Platform {}
 	}
 
+	type Program = {
+		name: string;
+		code: string;
+	};
+
 	type WHILEActionDict<T> = import('./lib/grammar/definitions/while.ohm-bundle').WHILEActionDict<T>;
 
 	type SemanticsOperation<T> = {
@@ -20,7 +25,6 @@ declare global {
 	type EvalResult = {
 		result: Vars;
 		trace: Vars[];
-		free_vars: string[];
 	};
 
 	type InterpretationResult = { eval: EvalResult; tree?: DerivationTree };
