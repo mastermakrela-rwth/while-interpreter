@@ -1,6 +1,8 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
+	declare const APP_VERSION: string;
+
 	namespace App {
 		// interface Error {}
 		// interface Locals {}
@@ -8,8 +10,11 @@ declare global {
 		// interface Platform {}
 	}
 
+	type OptionalResult<T> = { success: true; result: T } | { success: false; message: string };
+
 	type Program = {
 		name: string;
+		initial_state: Vars;
 		code: string;
 	};
 
@@ -20,7 +25,7 @@ declare global {
 		actions: WHILEActionDict<T>;
 	};
 
-	type Vars = { [key: string]: number };
+	type Vars = Record<string, number | null>;
 	type DerivationTree = Derivation;
 	type EvalResult = {
 		result: Vars;

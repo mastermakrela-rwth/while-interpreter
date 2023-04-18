@@ -2,7 +2,7 @@
 	import Katex from '$lib/Katex.svelte';
 
 	export let defaults: string[];
-	export let free_variables: Record<string, number>;
+	export let free_variables: Record<string, number | null>;
 
 	free_variables = defaults.reduce<Record<string, number>>((acc, name) => {
 		acc[name] = free_variables[name] ?? 0;

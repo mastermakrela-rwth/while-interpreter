@@ -33,7 +33,14 @@ const cmd: Partial<WHILEActionDict<void>> = {
 		cond._eval(this.args.args) ? then._eval(this.args.args) : _else._eval(this.args.args);
 	},
 	Cmd_while(_, cond, __, body, ___) {
+		let while_depth = 0;
 		while (cond._eval(this.args.args)) {
+			while_depth++;
+
+			if (while_depth > 100) {
+				throw new Error('Maximum while loop depth exceeded');
+			}
+
 			body._eval(this.args.args);
 		}
 	},
@@ -121,7 +128,12 @@ const variable: Partial<WHILEActionDict<number>> = {
 	var(name) {
 		const { vars } = this.args.args as Args;
 
-		return vars[name.sourceString];
+		const value = vars[name.sourceString];
+		if (value === undefined || value === null) {
+			throw new Error(`Variable ${name.sourceString} is not defined`);
+		}
+
+		return value;
 	}
 };
 
@@ -146,7 +158,13 @@ const eval_semantics: SemanticsOperation<EvalResult> = {
 			const vars: Vars = { ...default_values };
 			const trace: Vars[] = [];
 
-			this._eval({ vars, trace });
+			const args: Args = {
+				vars,
+				trace,
+				procedures: {}
+			};
+
+			this._eval(args);
 
 			return {
 				result: vars,

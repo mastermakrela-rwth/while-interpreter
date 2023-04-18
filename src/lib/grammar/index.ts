@@ -24,18 +24,25 @@ export const get_free_vars = (m: MatchResult): string[] => {
 	return semantics(m).free_vars({});
 };
 
-export const eval_while = (m: MatchResult, default_vars: Vars): EvalResult => {
-	return semantics(m).eval(default_vars);
+export const eval_while = (m: MatchResult, default_vars: Vars): OptionalResult<EvalResult> => {
+	try {
+		const result = semantics(m).eval(default_vars);
+		return { success: true, result };
+	} catch (e) {
+		console.warn('eval_while', e);
+		return { success: false, message: (e as Error).message };
+	}
 };
 
 export const get_derivation_tree = (
 	m: MatchResult,
 	default_vars: Vars
-): DerivationTree | undefined => {
+): OptionalResult<DerivationTree> => {
 	try {
-		return semantics(m).derivation_tree(default_vars);
+		const result = semantics(m).derivation_tree(default_vars);
+		return { success: true, result };
 	} catch (e) {
 		console.warn('get_derivation_tree', e);
-		return undefined;
+		return { success: false, message: (e as Error).message };
 	}
 };

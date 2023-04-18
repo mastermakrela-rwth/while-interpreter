@@ -1,9 +1,11 @@
 import type { NonterminalNode } from 'ohm-js';
 
 type Stuff = {
-	vars: Vars;
 	var_gen: VariableGenerator;
+	state: State;
+	cmd_only: boolean;
 	out_var: string;
+	while_depth: number;
 };
 
 class VariableGenerator {
@@ -13,7 +15,12 @@ class VariableGenerator {
 		const count = this.map.get(name) || 0;
 		this.map.set(name, count + 1);
 
-		return `${name}_${count}`;
+		if (name === 'sigma') {
+			const apostrophe = "'".repeat(count);
+			return `\\sigma ${apostrophe}`;
+		}
+
+		return `${name}_{${count}}`;
 	}
 
 	genList(names: string[]) {
@@ -21,81 +28,219 @@ class VariableGenerator {
 	}
 }
 
-const rule = (_in: string, out: string) =>
-	String.raw`\Braket{ ${_in}, \sigma } &\rightarrow ${out}`;
+class State {
+	private _state: Record<string, number>;
+	private _trace: { symbol: string; state: Record<string, number> }[];
+
+	constructor(state: Record<string, number> = {}) {
+		this._state = state;
+		this._trace = [{ symbol: '\\sigma', state: { ...state } }];
+	}
+
+	get state() {
+		return this._state;
+	}
+
+	get trace() {
+		return this._trace;
+	}
+
+	assign(name: string, value: number) {
+		this._state[name] = value;
+		this._trace.push({ symbol: this.symbol, state: { ...this._state } });
+	}
+
+	value(name: string) {
+		return this._state[name];
+	}
+
+	get symbol(): string {
+		const count = this._trace.length - 1;
+		return `\\sigma_{${count}}`;
+	}
+}
+
+const rule = (_in: string, out: string, state = '\\sigma') =>
+	String.raw`\Braket{ ${_in}, ${state} } &\rightarrow ${out}`;
 const condition = (cond: string) => String.raw`\text{where } ${cond}`;
 const condition2 = (cond: string) => String.raw`\text{if } ${cond}`;
 
 const program: Partial<WHILEActionDict<Derivation>> = {
 	Program(_) {
-		const vars: Vars = { ...this.args.stuff };
 		const var_gen = new VariableGenerator();
-
-		if (this.children.length > 1) {
-			throw new Error('Programs with more than one command are not supported');
-		}
-
-		this._eval({ vars, trace: [], free_vars: [] });
+		const state = new State();
+		Object.entries(this.args.stuff).forEach(([name, value]) => {
+			state.assign(name, value as number);
+		});
 
 		const z = var_gen.gen('z');
-		const args: Stuff = { vars, var_gen, out_var: z };
-		return this.child(0).derivation_tree(args);
-
-		// TODO: add a rule for the program node
-		return {
-			name: this.ctorName,
-			// premises: [this.child(0).derivation_tree({ vars, variable_gen })],
-			premises: [],
-			conclusion: {
-				source: String.raw`\Braket{ ${this.sourceString}, \sigma } \rightarrow z`,
-				rule: String.raw`\Braket{ \text{prog}, \sigma } \rightarrow z`
-			}
+		const args: Stuff = {
+			var_gen,
+			out_var: z,
+			cmd_only: false,
+			state,
+			while_depth: 0
 		};
+
+		const ret = this.child(0).derivation_tree(args);
+
+		return ret;
 	}
 };
 
 const cmd: Partial<WHILEActionDict<Derivation>> = {
-	// Cmd_seq(c1, _, c2) {
-	// 	return {
-	// 		name: this.ctorName,
-	// 		premises: [c1.derivation_tree(this.args.stuff), c2.derivation_tree(this.args.stuff)],
-	// 		conclusion: {
-	// 			source: '',
-	// 			rule: ''
-	// 		}
-	// 	};
-	// },
-	// Cmd_if(_, cond, __, then, ___, _else, ____) {
-	// 	const { vars, trace } = (this as _NonterminalNode).args;
-	// 	cond._eval(vars, trace) ? then._eval(vars, trace) : _else._eval(vars, trace);
-	// },
-	// Cmd_while(_, cond, __, body, ___) {
-	// 	const { vars, trace } = (this as _NonterminalNode).args;
-	// 	while (cond._eval(vars, trace)) {
-	// 		body._eval(vars, trace);
-	// 	}
-	// },
-	Cmd_assign(name, _, expr) {
-		return expr.derivation_tree(this.args.stuff);
+	Cmd_while(_, cond, __, body, ___) {
+		const { var_gen, state } = this.args.stuff as Stuff;
+
+		this.args.stuff.while_depth++;
+
+		if (this.args.stuff.while_depth > 10) {
+			throw new Error('while depth limit exceeded');
+		}
+
+		const sigma_in = state.symbol;
+
+		const [b, c] = var_gen.genList(['b', 'c']);
+		const cond_value = cond._eval({ vars: { ...state.state }, trace: [] });
+
+		const p1 = cond.derivation_tree({ ...this.args.stuff, out_var: b });
+		let p2, p3;
+		if (cond_value) {
+			p2 = body.derivation_tree({ ...this.args.stuff, out_var: b });
+			p3 = this.derivation_tree({ ...this.args.stuff });
+		}
+
+		const sigma_out = state.symbol;
+
+		const formatted_rule = String.raw`
+\text{while } \color{#a7f3d0} ${b} \color{unset}
+\text{ do } \color{#bae6fd} ${c} \color{unset}
+\text{ end}
+		`;
+		const formatted_source = String.raw`
+\text{while } \color{#a7f3d0} ${tex_string(cond.sourceString)} \color{unset}
+\text{ do } \color{#bae6fd} ${tex_string(body.sourceString)} \color{unset}
+\text{ end}
+		`;
+
+		return {
+			name: cond_value ? 'while-true' : 'while-false',
+			premises: cond_value ? [p1, p2, p3] : [p1],
+			conclusion: {
+				source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
+				rule: String.raw`\Braket{ ${formatted_rule}, ${sigma_in} } &\rightarrow ${sigma_out}`
+			}
+		};
+	},
+	Cmd_if(_, cond, __, then, ___, _else, ____) {
+		const { var_gen, state } = this.args.stuff as Stuff;
+
+		const sigma_in = state.symbol;
+
+		const cond_value = cond._eval({ vars: { ...state.state }, trace: [] });
+
+		const [b, c1, c2] = var_gen.genList(['b', 'c', 'c']);
+		const p1 = cond.derivation_tree({ ...this.args.stuff, out_var: b });
+
+		let p2;
+		if (cond_value) {
+			p2 = then.derivation_tree({ ...this.args.stuff });
+		} else {
+			p2 = _else.derivation_tree({ ...this.args.stuff });
+		}
+
+		const sigma_out = state.symbol;
+
+		const formatted_rule = String.raw`
+\text{if } \color{#a7f3d0} ${b} \color{unset}
+\text{ then } \color{#bae6fd} ${c1} \color{unset}
+\text{ else } \color{#f5d0fe} ${c2} \color{unset}
+\text{ end}
+		`;
+		const formatted_source = String.raw`
+\text{if } \color{#a7f3d0} ${tex_string(cond.sourceString)} \color{unset}
+\text{ then } \color{#bae6fd} ${tex_string(then.sourceString)} \color{unset}
+\text{ else } \color{#f5d0fe} ${tex_string(_else.sourceString)} \color{unset}
+\text{ end}
+		`;
+
+		return {
+			name: cond_value ? 'if-true' : 'if-false',
+			premises: [p1, p2],
+			conclusion: {
+				source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
+				rule: String.raw`\Braket{ ${formatted_rule}, ${sigma_in} } &\rightarrow ${sigma_out}`
+			}
+		};
+	},
+	Cmd_seq(c_1, _, c_2) {
+		const { var_gen, state } = this.args.stuff as Stuff;
+
+		const sigma_in = state.symbol;
+
+		const [c1, c2] = var_gen.genList(['c', 'c']);
+		const p1 = c_1.derivation_tree(this.args.stuff);
+		const p2 = c_2.derivation_tree(this.args.stuff);
+
+		const sigma_out = state.symbol;
+
+		const formatted_source = String.raw`
+\color{#bae6fd} ${tex_string(c_1.sourceString)} \color{unset}
+\text{ ; }
+\color{#f5d0fe} ${tex_string(c_2.sourceString)} \color{unset}
+		`;
+		``;
+
 		return {
 			name: this.ctorName,
-			premises: [expr.derivation_tree(this.args.stuff)],
+			premises: [p1, p2],
 			conclusion: {
-				source: '',
-				rule: ''
+				source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
+				rule: String.raw`\Braket{ \color{#bae6fd} ${c1} \color{unset};\color{#f5d0fe} ${c2} \color{unset}, ${sigma_in} } &\rightarrow ${sigma_out}`
+			}
+		};
+	},
+	Cmd_assign(name, _, a_exp) {
+		const { var_gen, state } = this.args.stuff as Stuff;
+
+		const sigma_in = state.symbol;
+		// in other cases here comes the code that might modify state
+
+		const [a, z] = var_gen.genList(['a', 'z']);
+
+		const p1 = a_exp.derivation_tree({ ...this.args.stuff, out_var: z });
+
+		const var_name = name.sourceString;
+		const var_value = a_exp._eval({ vars: { ...state.state }, trace: [] });
+		state.assign(var_name, var_value);
+
+		const sigma_out = state.symbol;
+
+		return {
+			name: this.ctorName,
+			premises: [p1],
+			conclusion: {
+				source: String.raw`\Braket{ ${this.sourceString}, ${sigma_in} } &\rightarrow ${sigma_in} [ ${var_name} \mapsto ${var_value} ] =: ${sigma_out}`,
+				rule: String.raw`\Braket{ ${var_name} := ${a}, ${sigma_in} } &\rightarrow ${sigma_in} [ ${var_name} \mapsto ${z} ] =: ${sigma_out}`
+			}
+		};
+	},
+	Cmd_skip(_) {
+		const { state } = this.args.stuff as Stuff;
+
+		const sigma_in = state.symbol;
+		// in other cases here comes the code that might modify state
+		const sigma_out = state.symbol;
+
+		return {
+			name: this.ctorName,
+			premises: [],
+			conclusion: {
+				source: String.raw`\Braket{ skip, ${sigma_in} } \rightarrow ${sigma_out}`,
+				rule: String.raw`\Braket{ skip, ${sigma_in} } \rightarrow ${sigma_out}`
 			}
 		};
 	}
-	// Cmd_skip(_) {
-	// 	return {
-	// 		name: this.ctorName,
-	// 		premises: [],
-	// 		conclusion: {
-	// 			source: '',
-	// 			rule: ''
-	// 		}
-	// 	};
-	// }
 };
 
 const operator_to_tex: Record<string, string> = {
@@ -118,9 +263,9 @@ const tex_string = (str: string) => {
 const interpret_bool = (_this: NonterminalNode, b_exp: NonterminalNode) => {
 	const [a1, operator, a2] = b_exp.children;
 
-	const { vars, var_gen, out_var } = _this.args.stuff as Stuff;
+	const { var_gen, out_var, state } = _this.args.stuff as Stuff;
 	const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
-	const value = b_exp._eval({ vars, trace: [], free_vars: [] });
+	const value = b_exp._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 	let cond = `${z_1} ${operator_to_tex[operator.sourceString]} ${z_2}`;
 	if (!value) {
 		cond = `\\neg (${cond})`;
@@ -148,9 +293,9 @@ const boolean_exp: Partial<WHILEActionDict<Derivation>> = {
 		return interpret_bool(this, b_exp);
 	},
 	BExp_not(_, b_exp) {
-		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
+		const { state, var_gen, out_var } = this.args.stuff as Stuff;
 		const [b] = var_gen.genList(['b']);
-		const value = this._eval({ vars, trace: [], free_vars: [] });
+		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -179,10 +324,17 @@ const boolean_exp: Partial<WHILEActionDict<Derivation>> = {
 };
 
 const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
+	AExp(arg0) {
+		const { cmd_only } = this.args.stuff as Stuff;
+
+		if (cmd_only) return undefined;
+
+		return arg0.derivation_tree(this.args.stuff);
+	},
 	AExp_add(a1, _, a2) {
-		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
+		const { state, var_gen, out_var } = this.args.stuff as Stuff;
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
-		const value = this._eval({ vars, trace: [], free_vars: [] });
+		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -198,9 +350,9 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 		};
 	},
 	AExp_sub(a1, _, a2) {
-		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
+		const { state, var_gen, out_var } = this.args.stuff as Stuff;
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z', 'z']);
-		const value = this._eval({ vars, trace: [], free_vars: [] });
+		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -216,10 +368,10 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 		};
 	},
 	AExp_mul(a1, _, a2) {
-		const { vars, var_gen, out_var } = this.args.stuff as Stuff;
+		const { state, var_gen, out_var } = this.args.stuff as Stuff;
 
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
-		const value = this._eval({ vars, trace: [], free_vars: [] });
+		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -241,8 +393,8 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 
 const bool: Partial<WHILEActionDict<Derivation>> = {
 	bool(arg0) {
-		const { vars, out_var } = this.args.stuff as Stuff;
-		const value = this._eval({ vars, trace: [], free_vars: [] });
+		const { state, out_var } = this.args.stuff as Stuff;
+		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -257,8 +409,8 @@ const bool: Partial<WHILEActionDict<Derivation>> = {
 
 const number: Partial<WHILEActionDict<Derivation>> = {
 	number(arg0) {
-		const { vars, out_var } = this.args.stuff as Stuff;
-		const value = this._eval({ vars, trace: [], free_vars: [] });
+		const { state, out_var } = this.args.stuff as Stuff;
+		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
@@ -273,14 +425,14 @@ const number: Partial<WHILEActionDict<Derivation>> = {
 
 const variable: Partial<WHILEActionDict<Derivation>> = {
 	var(name) {
-		const { vars, out_var } = this.args.stuff as Stuff;
-		const value = this._eval({ vars, trace: [], free_vars: [] });
+		const { out_var, state } = this.args.stuff as Stuff;
+		const value = state.value(name.sourceString);
 
 		return {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: rule(this.sourceString, value),
+				source: rule(this.sourceString, `${value}`),
 				rule: rule(this.sourceString, `\\sigma(${this.sourceString}) =: ${out_var}`)
 			}
 		};

@@ -572,3 +572,20 @@ var {
 	@apply my-2 p-2 pl-3  bg-slate-700;
 	@apply border-l-4 border-yellow-600;
 }
+
+.error::before {
+	content: '';
+	@apply absolute inset-0 -z-10;
+	@apply w-full h-full bg-red-600 bg-opacity-25;
+}
+.error {
+	@apply relative z-10;
+	@apply text-xs italic;
+	@apply my-2 p-2 pl-3  bg-slate-700;
+	@apply border-l-4 border-red-600;
+}
+
+.content-width {
+	@apply mx-auto;
+	@apply max-w-4xl;
+}

@@ -2,7 +2,7 @@
 	import Playground from './Playground.svelte';
 </script>
 
-<section>
+<section class="content-width">
 	<h2>What is <code>WHILE</code>?</h2>
 
 	<p>
@@ -34,7 +34,9 @@
 </section>
 
 <section>
-	<h2>Try it out!</h2>
+	<div class="content-width">
+		<h2>Try it out!</h2>
+	</div>
 
 	<Playground />
 </section>

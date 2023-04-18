@@ -4,31 +4,20 @@ type Stuff = {
 
 const cmd: Partial<WHILEActionDict<string[]>> = {
 	Cmd_seq(c1, _, c2) {
-		const { already_assigned } = this.args.stuff as Stuff;
-		console.log('SEQ BEFORE', already_assigned);
-
 		const frees1 = c1.free_vars(this.args.stuff) as string[];
-		console.log('SEQ AFTER 1', already_assigned, frees1);
 
 		const frees2 = c2.free_vars(this.args.stuff) as string[];
-		console.log('SEQ AFTER 2', already_assigned, frees2);
 
-		return [...frees1.filter((v) => !already_assigned.includes(v)), ...frees2];
-
-		return frees2;
+		return [...frees1, ...frees2];
 	},
 	Cmd_if(_, cond, __, then, ___, _else, ____) {
 		const { already_assigned } = this.args.stuff as Stuff;
-		console.log('IF BEFORE', already_assigned);
 
 		const frees1 = cond.free_vars(this.args.stuff);
-		console.log('IF AFTER 1', already_assigned, frees1);
 
 		const frees2 = then.free_vars({ already_assigned: [...already_assigned] });
-		console.log('IF AFTER 2', already_assigned, frees2);
 
 		const frees3 = _else.free_vars({ already_assigned: [...already_assigned] });
-		console.log('IF AFTER 3', already_assigned, frees3);
 
 		return [...frees1, ...frees2, ...frees3];
 	},
@@ -51,7 +40,6 @@ const cmd: Partial<WHILEActionDict<string[]>> = {
 const variable: Partial<WHILEActionDict<string[]>> = {
 	var(name) {
 		const { already_assigned } = this.args.stuff as Stuff;
-		console.log('🚀 ~ file: free_variables.ts:43 ~ var ~ already_assigned:', already_assigned);
 
 		if (already_assigned.includes(name.sourceString)) return [];
 
@@ -63,7 +51,6 @@ const free_vars_semantics: SemanticsOperation<string[]> = {
 	name: 'free_vars(stuff)',
 	actions: {
 		Program(arg0) {
-			console.log('🚀 ~ file: free_variables.ts:49 ~ Program ~ arg0:', this);
 			return arg0.free_vars({ already_assigned: [] });
 		},
 		...cmd,

@@ -1,6 +1,7 @@
 export const programs: Program[] = [
 	{
 		name: '42',
+		initial_state: {},
 		code: `
 x := 6;
 y := 7;
@@ -15,9 +16,9 @@ while x > 0 do
 end
 `
 	},
-
 	{
 		name: '42 (Free Variables)',
+		initial_state: { x: 6, y: 7 },
 		code: `
 while x > 0 do
 	x := x - 1;
@@ -32,6 +33,7 @@ end
 
 	{
 		name: 'Fibonacci',
+		initial_state: {},
 		code: `
 x := 0;
 y := 1;
@@ -46,13 +48,14 @@ end
 
 	{
 		name: 'Equation',
+		initial_state: { x: 3, y: 9 },
 		code: `
 z := (x+3) * (y-2)
 `
 	},
 	{
 		name: 'Equation Derivation',
-
+		initial_state: { y: 4 },
 		code: `
 (2 - -4) * (11 - y)
 `
@@ -60,8 +63,20 @@ z := (x+3) * (y-2)
 
 	{
 		name: 'Bool Derivation',
+		initial_state: {},
 		code: `
 !1=1 || (true && 3 <= 4) 
+`
+	},
+	{
+		name: 'Program Derivation',
+		initial_state: { x: 3 },
+		code: `
+y := 1;
+while !(x=1) do
+	y := y * x;
+	x := x -1
+end
 `
 	}
 ];
