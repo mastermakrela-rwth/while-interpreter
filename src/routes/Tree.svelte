@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Katex from '$lib/Katex.svelte';
-	import domtoimage from 'dom-to-image';
 
 	export let tree: DerivationTree;
 	export let root = true;
@@ -20,14 +19,6 @@
 		if (bg_div) ({ x } = bg_div.getBoundingClientRect());
 		if (content_div) ({ height } = content_div.getBoundingClientRect());
 	};
-
-	const get_svg = async () => {
-		const imageDataUrl = await domtoimage.toPng(content_div);
-		const a = document.createElement('a');
-		a.href = imageDataUrl;
-		a.download = 'tree.png';
-		a.click();
-	};
 </script>
 
 <svelte:window on:resize={update} />
@@ -39,7 +30,6 @@
 				<input id="with_rules" type="checkbox" bind:checked={with_rules} class="mr-2" />
 				<label for="with_rules">With rules</label>
 			</div>
-			<!-- <button class="border px-4 py-1 rounded-full text-sm" on:click={get_svg}> Get SVG </button> -->
 			<!-- <button class="border px-4 py-1 rounded-full text-sm" on:click={() => (expanded = !expanded)}>
 				{#if expanded}
 					Collapse
