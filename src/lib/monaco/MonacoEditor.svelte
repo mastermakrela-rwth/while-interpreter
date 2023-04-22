@@ -2,8 +2,12 @@
 	import { onMount } from 'svelte';
 	import type * as monaco from 'monaco-editor';
 	import { createEditor } from './monaco_config';
+	import { createEditor as createEditor2 } from './monaco_config_abstract_mashine';
 
 	export let value: string;
+	export let readOnly = false;
+	export let wrap = true;
+	export let language: 'while' | 'machine_code' = 'while';
 
 	let Monaco: typeof monaco;
 	let divEl: HTMLDivElement;
@@ -14,7 +18,12 @@
 		// we have to do this like that because Cloudflare Pages doesn't like ttf
 		Monaco = await import('monaco-editor');
 
-		editor = createEditor(divEl, value, Monaco);
+		if (language == 'while') {
+			editor = createEditor(divEl, value, Monaco, { readOnly, wordWrap: wrap ? 'on' : 'off' });
+		} else if (language == 'machine_code') {
+			editor = createEditor2(divEl, value, Monaco, readOnly);
+		}
+
 		const model = editor.getModel();
 
 		if (!model) {

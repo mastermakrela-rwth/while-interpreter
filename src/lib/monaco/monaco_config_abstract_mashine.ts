@@ -1,12 +1,28 @@
 import type * as monaco from 'monaco-editor';
 
-const while_lang_definition: monaco.languages.IMonarchLanguage = {
-	includeLF: true,
-
+const am_lang_definition: monaco.languages.IMonarchLanguage = {
 	defaultToken: '',
-	tokenPostfix: '.WHILE',
+	tokenPostfix: '.abstract_machine',
 
-	keywords: ['skip', 'while', 'do', 'end', 'if', 'then', 'else', 'end'],
+	keywords: [
+		'PUSH',
+		'PUSH',
+		'ADD',
+		'SUB',
+		'MULT',
+		'EQ',
+		'GT',
+		'LT',
+		'GEQ',
+		'LEQ',
+		'NOT',
+		'AND',
+		'OR',
+		'LOAD',
+		'STO',
+		'JMP',
+		'JMPF'
+	],
 
 	brackets: [
 		{ open: '{', close: '}', token: 'delimiter.curly' },
@@ -18,7 +34,7 @@ const while_lang_definition: monaco.languages.IMonarchLanguage = {
 		root: [
 			{ include: '@whitespace' },
 			{ include: '@numbers' },
-			// { include: '@strings' },
+			{ include: '@strings' },
 
 			[/[,:;]/, 'delimiter'],
 			[/[{}\[\]()]/, '@brackets'],
@@ -84,69 +100,20 @@ const while_lang_definition: monaco.languages.IMonarchLanguage = {
 	}
 };
 
-const whileCompletionItemProvider = (
-	Monaco: typeof monaco
-): monaco.languages.CompletionItemProvider => ({
-	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-	// @ts-ignore
-	provideCompletionItems: async (model, position) => {
-		const base = {
-			kind: Monaco.languages.CompletionItemKind.Keyword,
-			insertTextRules: Monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
-		};
-
-		return {
-			suggestions: [
-				{
-					label: 'if statement',
-					detail: 'Inserts `if then else` statement',
-					insertText:
-						'if ${1:condition} then\n\t${2:do something}\nelse\n\t${3:do something else}\nend',
-					...base
-				},
-				{
-					label: 'while loop',
-					detail: 'Inserts `while` loop',
-					insertText: 'while ${1:condition} do\n\t${2:do something}\nend',
-					...base
-				},
-				{
-					label: 'skip',
-					detail: 'Inserts `skip`',
-					insertText: 'skip',
-					...base
-				}
-			]
-		};
-	}
-});
-
-const codeFormatter = (model: monaco.editor.ITextModel) => [
-	{
-		range: model.getFullModelRange(),
-		// TODO: Format code
-		text: model.getValue()
-	}
-];
-
 export const createEditor = (
 	domElement: HTMLElement,
 	value: string,
 	Monaco: typeof monaco,
-	options: monaco.editor.IStandaloneEditorConstructionOptions
+	readOnly = false
 ) => {
-	Monaco.languages.register({ id: 'while' });
-	Monaco.languages.setMonarchTokensProvider('while', while_lang_definition);
-	Monaco.languages.registerCompletionItemProvider('while', whileCompletionItemProvider(Monaco));
-	Monaco.languages.registerDocumentFormattingEditProvider('while', {
-		provideDocumentFormattingEdits: codeFormatter
-	});
+	Monaco.languages.register({ id: 'abstract_machine' });
+	Monaco.languages.setMonarchTokensProvider('abstract_machine', am_lang_definition);
 
-	const _options: monaco.editor.IStandaloneEditorConstructionOptions = {
+	const options: monaco.editor.IStandaloneEditorConstructionOptions = {
 		theme: 'vs-dark',
 		language: 'while',
-		model: Monaco.editor.createModel(value, 'while'),
-		wordWrap: 'on',
+		model: Monaco.editor.createModel(value, 'abstract_machine'),
+		wordWrap: 'off',
 		automaticLayout: true,
 		minimap: {
 			enabled: true
@@ -163,8 +130,8 @@ export const createEditor = (
 		unicodeHighlight: {
 			invisibleCharacters: true
 		},
-		...options
+		readOnly
 	};
 
-	return Monaco.editor.create(domElement, _options);
+	return Monaco.editor.create(domElement, options);
 };

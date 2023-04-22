@@ -45,6 +45,6 @@ WHILE {
 		= letter+
 
 	number	(positive and negative integers)
-		= "-" digit+	--negative
-		| digit+		--positive
+		= "-" digit+	-- negative
+		| digit+		-- positive
 }

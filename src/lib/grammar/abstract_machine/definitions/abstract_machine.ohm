@@ -1,0 +1,31 @@
+ABSTRACT_MACHINE {
+	Program = Instruction ";" Program 	-- sequence
+		| Instruction					-- instruction
+
+	Instruction
+		= "PUSH" "(" number ")"	-- push_number
+		| "PUSH" "(" bool ")"	-- push_bool
+		| "ADD"		 			-- add
+		| "SUB" 				-- sub
+		| "MULT" 				-- mult
+		| "EQ" 					-- eq
+		| "GT" 					-- gt
+		| "NOT" 				-- not
+		| "AND" 				-- and
+		| "OR" 					-- or
+		| "LOAD" "(" var ")" 	-- load
+		| "STO" "(" var ")" 	-- store
+		| "JMP" "(" number ")" 	-- jump
+		| "JMPF" "(" number ")"	-- jump_if_false
+
+	bool (a bool value)
+		= "true" ~var
+		| "false" ~var
+
+	var  (a variable)
+		= letter+
+
+	number	(positive and negative integers)
+		= "-" digit+	-- negative
+		| digit+		-- positive
+}

@@ -3,7 +3,7 @@ const result = makeRecipe([
 	'grammar',
 	{
 		source:
-			'WHILE {\n\tProgram = Cmd | BExp | AExp\n\n\tCmd\t(commands / statements)\n\t\t= Cmd ";" Cmd\t\t\t\t\t\t\t-- seq\n\t\t| "if" BExp "then" Cmd "else" Cmd "end"\t-- if\n\t\t| "while" BExp "do" Cmd "end"\t\t\t-- while\n\t\t| var ":=" AExp\t\t\t\t\t\t\t-- assign\n\t\t| "skip"\t\t\t\t\t\t\t\t-- skip\n\n\tBExp\n\t\t= BExp "&&" BExp\t-- and\n\t\t| BExp "||" BExp\t-- or\n        | "!" PriBExp\t\t-- not\n        | PriBExp\n\n\tPriBExp\n\t\t= "(" BExp ")"\t\t-- paren\n\t\t| "&&" PriBExp\t\t-- and\n\t\t| "||" PriBExp\t\t-- or\n\t\t| AExp "=" AExp\t\t-- eq\n\t\t| AExp ">" AExp\t\t-- gt\n\t\t| AExp "<" AExp\t\t-- lt\n\t\t| AExp ">=" AExp\t-- geq\n\t\t| AExp "<=" AExp\t-- leq\n\t\t| bool\n\n\tAExp (arithmetic expressions)\n\t\t= AExp "+" AExp\t\t-- add\n\t\t| AExp "-" AExp\t\t-- sub\n\t\t| AExp "*" PriAExp\t-- mul\n\t\t| PriAExp\n\n\tPriAExp\n\t\t= "(" AExp ")"\t\t-- paren\n\t\t| "+" PriAExp\t\t-- pos\n\t\t| var\n\t\t| number\n\n\tbool (a bool value)\n\t\t= "true" ~var\n\t\t| "false" ~var\n\n\tvar  (a variable)\n\t\t= letter+\n\n\tnumber\t(positive and negative integers)\n\t\t= "-" digit+\t--negative\n\t\t| digit+\t\t--positive\n}'
+			'WHILE {\n\tProgram = Cmd | BExp | AExp\n\n\tCmd\t(commands / statements)\n\t\t= Cmd ";" Cmd\t\t\t\t\t\t\t-- seq\n\t\t| "if" BExp "then" Cmd "else" Cmd "end"\t-- if\n\t\t| "while" BExp "do" Cmd "end"\t\t\t-- while\n\t\t| var ":=" AExp\t\t\t\t\t\t\t-- assign\n\t\t| "skip"\t\t\t\t\t\t\t\t-- skip\n\n\tBExp\n\t\t= BExp "&&" BExp\t-- and\n\t\t| BExp "||" BExp\t-- or\n        | "!" PriBExp\t\t-- not\n        | PriBExp\n\n\tPriBExp\n\t\t= "(" BExp ")"\t\t-- paren\n\t\t| "&&" PriBExp\t\t-- and\n\t\t| "||" PriBExp\t\t-- or\n\t\t| AExp "=" AExp\t\t-- eq\n\t\t| AExp ">" AExp\t\t-- gt\n\t\t| AExp "<" AExp\t\t-- lt\n\t\t| AExp ">=" AExp\t-- geq\n\t\t| AExp "<=" AExp\t-- leq\n\t\t| bool\n\n\tAExp (arithmetic expressions)\n\t\t= AExp "+" AExp\t\t-- add\n\t\t| AExp "-" AExp\t\t-- sub\n\t\t| AExp "*" PriAExp\t-- mul\n\t\t| PriAExp\n\n\tPriAExp\n\t\t= "(" AExp ")"\t\t-- paren\n\t\t| "+" PriAExp\t\t-- pos\n\t\t| var\n\t\t| number\n\n\tbool (a bool value)\n\t\t= "true" ~var\n\t\t| "false" ~var\n\n\tvar  (a variable)\n\t\t= letter+\n\n\tnumber\t(positive and negative integers)\n\t\t= "-" digit+\t-- negative\n\t\t| digit+\t\t-- positive\n}'
 	},
 	'WHILE',
 	null,
@@ -410,7 +410,7 @@ const result = makeRecipe([
 		],
 		number_negative: [
 			'define',
-			{ sourceInterval: [912, 933] },
+			{ sourceInterval: [912, 934] },
 			null,
 			[],
 			[
@@ -426,21 +426,21 @@ const result = makeRecipe([
 		],
 		number_positive: [
 			'define',
-			{ sourceInterval: [938, 956] },
+			{ sourceInterval: [939, 958] },
 			null,
 			[],
-			['plus', { sourceInterval: [938, 944] }, ['app', { sourceInterval: [938, 943] }, 'digit', []]]
+			['plus', { sourceInterval: [939, 945] }, ['app', { sourceInterval: [939, 944] }, 'digit', []]]
 		],
 		number: [
 			'define',
-			{ sourceInterval: [868, 956] },
+			{ sourceInterval: [868, 958] },
 			'positive and negative integers',
 			[],
 			[
 				'alt',
-				{ sourceInterval: [912, 956] },
+				{ sourceInterval: [912, 958] },
 				['app', { sourceInterval: [912, 922] }, 'number_negative', []],
-				['app', { sourceInterval: [938, 944] }, 'number_positive', []]
+				['app', { sourceInterval: [939, 945] }, 'number_positive', []]
 			]
 		]
 	}

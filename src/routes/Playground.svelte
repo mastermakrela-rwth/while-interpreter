@@ -1,18 +1,23 @@
 <script lang="ts">
 	import { dev } from '$app/environment';
-	import Katex from '$lib/Katex.svelte';
-	import { eval_while, get_derivation_tree, get_free_vars, parse_while } from '$lib/grammar';
+	import { programs } from '$lib/example_programs';
+	import {
+		eval_while,
+		get_derivation_tree,
+		get_free_vars,
+		get_machine_code,
+		parse_while
+	} from '$lib/grammar/while';
 	import MonacoEditor from '$lib/monaco/MonacoEditor.svelte';
 	import { fade, slide } from 'svelte/transition';
 	import FreeVars from './FreeVars.svelte';
-	import Trace from './Trace.svelte';
-	import Tree from './Tree.svelte';
-	import { programs } from './example_programs';
+	import MachineCodeEditor from './_parts/machine_code/MachineCodeEditor.svelte';
+	import Results from './_parts/results/Results.svelte';
+	import Derivation from './_parts/derivation/Derivation.svelte';
 
 	const initial_program = programs[programs.length - 1];
 
 	let input = initial_program.code;
-	let show_trace = false;
 
 	$: contains_while = input.includes('while');
 
@@ -20,30 +25,23 @@
 
 	let free_variables: string[] = [];
 	$: if (parsed.success) free_variables = [...get_free_vars(parsed.result!)];
-	$: if (dev) console.log('🚀 ~ file: Playground.svelte:55 ~ free_variables:', free_variables);
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:20 ~ free_variables:', free_variables);
 
 	let default_values: Record<string, number | null> = initial_program.initial_state;
-	$: if (dev) console.log('🚀 ~ file: Playground.svelte:58 ~ default_values:', default_values);
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:23 ~ default_values:', default_values);
 
 	let eval_result: OptionalResult<EvalResult> | undefined = undefined;
 	$: if (parsed.success) eval_result = eval_while(parsed.result!, default_values);
-	$: if (dev) console.log('🚀 ~ file: Playground.svelte:59 ~ eval_results:', eval_results);
-	$: eval_results = eval_result?.success ? eval_result.result : undefined;
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:27 ~ eval_result:', eval_result);
 
-	let derivation: DerivationTree | undefined = undefined;
-	let derivation_error: string | undefined = undefined;
-	$: if (parsed.success) {
-		const result = get_derivation_tree(parsed.result!, default_values);
+	let derivation_result: OptionalResult<DerivationTree> | undefined = undefined;
+	$: if (parsed.success) derivation_result = get_derivation_tree(parsed.result!, default_values);
+	$: if (dev) console.log('🚀 ~ file: Playground.svelte:31 ~ derivation:', derivation_result);
 
-		if (result.success) {
-			derivation = result.result;
-			derivation_error = undefined;
-		} else {
-			derivation = undefined;
-			derivation_error = result.message;
-		}
-	}
-	$: if (dev) console.log('🚀 ~ file: Playground.svelte:67 ~ derivation:', derivation);
+	let machine_code_result: OptionalResult<MachineCode> | undefined = undefined;
+	$: if (parsed.success) machine_code_result = get_machine_code(parsed.result!);
+	$: if (dev)
+		console.log('🚀 ~ file: Playground.svelte:35 ~ machine_code_result:', machine_code_result);
 </script>
 
 <section class="content-width">
@@ -94,80 +92,13 @@
 			{/key}
 		</div>
 	{/if}
-
-	<h3>Results</h3>
-
-	{#if eval_result?.success}
-		{@const result = eval_result.result.result}
-		{@const trace = eval_result.result.trace}
-		<h4>
-			<span> Final State </span>
-			<span class="ml-4 text-gray-300"> ( <Katex math="\sigma(Var)" /> ) </span>
-		</h4>
-
-		<Trace trace={[result]} />
-
-		<h4>
-			<span> Execution trace </span>
-			<span class="ml-4 text-gray-300"> ( <Katex math="\Sigma" /> ) </span>
-		</h4>
-
-		<div class="flex justify-between items-center">
-			<p>{trace.length} Steps</p>
-
-			<button
-				class="border px-4 py-1 rounded-full text-sm"
-				on:click={() => (show_trace = !show_trace)}
-			>
-				{#if show_trace}
-					Hide trace
-				{:else}
-					Show trace
-				{/if}
-			</button>
-		</div>
-
-		{#if show_trace}
-			<div transition:slide={{ duration: 1000 }}>
-				<Trace show_steps {trace} />
-			</div>
-		{/if}
-	{:else if eval_result}
-		{@const message = eval_result.message}
-
-		<div class="error">
-			<span class="font-semibold block mb-1">Error!</span>
-			<span> {message} </span>
-		</div>
-	{/if}
-
-	<h3>Derivation</h3>
-
-	<h4>Derivation Tree</h4>
-
-	{#if !derivation}
-		<div class="disclaimer">
-			<span class="font-semibold block mb-1">Disclaimer!</span>
-			<span>
-				Derivation Trees work for Arithmetic and Boolean Expressions without any limitations. For
-				programs with <code>while</code> loops, we have a depth limit.
-			</span>
-		</div>
-
-		{#if derivation_error}
-			<div class="error">
-				<span class="font-semibold block mb-1">Error!</span>
-				<span> {derivation_error} </span>
-			</div>
-		{/if}
-	{/if}
 </section>
 
-{#if derivation}
-	<div class="not-prose">
-		<Tree tree={derivation} />
-	</div>
-{/if}
+<Results {eval_result} />
+
+<Derivation {derivation_result} />
+
+<MachineCodeEditor {machine_code_result} />
 
 <style lang="postcss">
 	.error::before {

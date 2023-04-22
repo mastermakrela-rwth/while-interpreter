@@ -1,5 +1,9 @@
 # WHILE-interpreter
 
+## 0.3.0
+
+- added abstract machine code generation
+
 ## 0.2.0
 
 - added Changelog

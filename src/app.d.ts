@@ -18,7 +18,15 @@ declare global {
 		code: string;
 	};
 
-	type WHILEActionDict<T> = import('./lib/grammar/definitions/while.ohm-bundle').WHILEActionDict<T>;
+	type WHILEActionDict<T> =
+		import('./lib/grammar/while/definitions/while.ohm-bundle').WHILEActionDict<T>;
+	type ABSTRACT_MACHINEActionDict<T> =
+		import('./lib/grammar/abstract_machine/definitions/abstract_machine.ohm-bundle.d.ts').ABSTRACT_MACHINEActionDict<T>;
+
+	type ExecutionConfiguration =
+		import('./lib/grammar/abstract_machine/semantics/execute.ts').ExecutionConfiguration;
+
+	type MachineCode = string;
 
 	type SemanticsOperation<T> = {
 		name: string;

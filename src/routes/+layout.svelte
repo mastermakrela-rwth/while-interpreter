@@ -19,7 +19,7 @@
 		<p class="text-gray-300">
 			Version:
 			<a
-				href="https://github.com/mastermakrela-rwth/while-interpreter/CHANGELOG.md"
+				href="https://github.com/mastermakrela-rwth/while-interpreter/blob/main/CHANGELOG.md"
 				target="_blank"
 			>
 				<code class="text-gray-300">{APP_VERSION}</code>
