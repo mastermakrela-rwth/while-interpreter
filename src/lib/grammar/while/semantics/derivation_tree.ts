@@ -54,14 +54,32 @@ class State {
 		return this._state[name];
 	}
 
+	private _colors = [
+		'#fef9c3',
+		'#fef3c7',
+		'#fef08a',
+		'#fde68a',
+		'#fde047',
+		'#fcd34d',
+		'#facc15',
+		'#fbbf24',
+		'#eab308',
+		'#f59e0b',
+		'#ca8a04',
+		'#d97706'
+	];
+
 	get symbol(): string {
 		const count = this._trace.length - 1;
-		return `\\sigma_{${count}}`;
+		const color = this._colors[count % this._colors.length];
+
+		return String.raw`\color{${color}} \sigma_{${count}} \color{unset}`;
 	}
 }
 
-const rule = (_in: string, out: string, state = '\\sigma') =>
-	String.raw`\Braket{ ${_in}, ${state} } &\rightarrow ${out}`;
+const rule = (exp: string, state: string, out: string) =>
+	String.raw`\Braket{ ${exp}, ${state} } &\rightarrow ${out}`;
+
 const condition = (cond: string) => String.raw`\text{where } ${cond}`;
 const condition2 = (cond: string) => String.raw`\text{if } ${cond}`;
 
@@ -127,8 +145,10 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 			name: cond_value ? 'while-true' : 'while-false',
 			premises: cond_value ? [p1, p2, p3] : [p1],
 			conclusion: {
-				source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
-				rule: String.raw`\Braket{ ${formatted_rule}, ${sigma_in} } &\rightarrow ${sigma_out}`
+				// source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
+				source: rule(formatted_source, sigma_in, sigma_out),
+				// rule: String.raw`\Braket{ ${formatted_rule}, ${sigma_in} } &\rightarrow ${sigma_out}`
+				rule: rule(formatted_rule, sigma_in, sigma_out)
 			}
 		};
 	},
@@ -168,8 +188,10 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 			name: cond_value ? 'if-true' : 'if-false',
 			premises: [p1, p2],
 			conclusion: {
-				source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
-				rule: String.raw`\Braket{ ${formatted_rule}, ${sigma_in} } &\rightarrow ${sigma_out}`
+				// source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
+				source: rule(formatted_source, sigma_in, sigma_out),
+				// rule: String.raw`\Braket{ ${formatted_rule}, ${sigma_in} } &\rightarrow ${sigma_out}`
+				rule: rule(formatted_rule, sigma_in, sigma_out)
 			}
 		};
 	},
@@ -187,16 +209,21 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 		const formatted_source = String.raw`
 \color{#bae6fd} ${c_1.latex} \color{unset}
 \text{ ; }
-\color{#f5d0fe} ${c_2.latex} \color{unset}
-		`;
-		``;
+\color{#f5d0fe} ${c_2.latex} \color{unset}`;
+
+		const formatted_rule = String.raw`
+\color{#bae6fd} ${c1} \color{unset}
+\text{ ; }
+\color{#f5d0fe} ${c2} \color{unset}`;
 
 		return {
 			name: this.ctorName,
 			premises: [p1, p2],
 			conclusion: {
-				source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
-				rule: String.raw`\Braket{ \color{#bae6fd} ${c1} \color{unset};\color{#f5d0fe} ${c2} \color{unset}, ${sigma_in} } &\rightarrow ${sigma_out}`
+				// source: String.raw`\Braket{ ${formatted_source}, ${sigma_in} } &\rightarrow ${sigma_out}`,
+				source: rule(formatted_source, sigma_in, sigma_out),
+				// rule: String.raw`\Braket{ \color{#bae6fd} ${c1} \color{unset};\color{#f5d0fe} ${c2} \color{unset}, ${sigma_in} } &\rightarrow ${sigma_out}`
+				rule: rule(formatted_rule, sigma_in, sigma_out)
 			}
 		};
 	},
@@ -220,8 +247,18 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 			name: this.ctorName,
 			premises: [p1],
 			conclusion: {
-				source: String.raw`\Braket{ ${this.sourceString}, ${sigma_in} } &\rightarrow ${sigma_in} [ ${var_name} \mapsto ${var_value} ] =: ${sigma_out}`,
-				rule: String.raw`\Braket{ ${var_name} := ${a}, ${sigma_in} } &\rightarrow ${sigma_in} [ ${var_name} \mapsto ${z} ] =: ${sigma_out}`
+				// source: String.raw`\Braket{ ${this.sourceString}, ${sigma_in} } &\rightarrow ${sigma_in} [ ${var_name} \mapsto ${var_value} ] =: ${sigma_out}`,
+				source: rule(
+					this.sourceString,
+					sigma_in,
+					String.raw`${sigma_in} [ ${var_name} \mapsto ${var_value} ] =: ${sigma_out}`
+				),
+				// rule: String.raw`\Braket{ ${var_name} := ${a}, ${sigma_in} } &\rightarrow ${sigma_in} [ ${var_name} \mapsto ${z} ] =: ${sigma_out}`
+				rule: rule(
+					String.raw`${var_name} := ${a}`,
+					sigma_in,
+					String.raw`${sigma_in} [ ${var_name} \mapsto ${z} ] =: ${sigma_out}`
+				)
 			}
 		};
 	},
@@ -236,8 +273,10 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: String.raw`\Braket{ skip, ${sigma_in} } \rightarrow ${sigma_out}`,
-				rule: String.raw`\Braket{ skip, ${sigma_in} } \rightarrow ${sigma_out}`
+				// source: String.raw`\Braket{ skip, ${sigma_in} } \rightarrow ${sigma_out}`,
+				source: rule(this.sourceString, sigma_in, sigma_out),
+				// rule: String.raw`\Braket{ skip, ${sigma_in} } \rightarrow ${sigma_out}`
+				rule: rule(this.sourceString, sigma_in, sigma_out)
 			}
 		};
 	}
@@ -247,12 +286,14 @@ const interpret_bool = (_this: NonterminalNode, b_exp: NonterminalNode) => {
 	const [a1, operator, a2] = b_exp.children;
 
 	const { var_gen, out_var, state } = _this.args.stuff as Stuff;
+	const sigma_in = state.symbol;
+
 	const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
 	const value = b_exp._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
+
 	let cond = `${z_1} ${operator.latex} ${z_2}`;
-	if (!value) {
-		cond = `\\neg (${cond})`;
-	}
+	if (!value) cond = `\\neg (${cond})`;
+
 	return {
 		name: _this.ctorName,
 		premises: [
@@ -260,9 +301,8 @@ const interpret_bool = (_this: NonterminalNode, b_exp: NonterminalNode) => {
 			a2.derivation_tree({ ..._this.args.stuff, out_var: z_2 })
 		],
 		conclusion: {
-			source: rule(b_exp.latex, value),
-			// source: '',
-			rule: rule(`${a_1} = ${a_2}`, out_var)
+			source: rule(b_exp.latex, sigma_in, value),
+			rule: rule(`${a_1} = ${a_2}`, sigma_in, out_var)
 		},
 		conditions: [condition2(cond)]
 	};
@@ -278,6 +318,8 @@ const boolean_exp: Partial<WHILEActionDict<Derivation>> = {
 	},
 	BExp_not(_, b_exp) {
 		const { state, var_gen, out_var } = this.args.stuff as Stuff;
+		const sigma_in = state.symbol;
+
 		const [b] = var_gen.genList(['b']);
 		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
@@ -285,8 +327,8 @@ const boolean_exp: Partial<WHILEActionDict<Derivation>> = {
 			name: this.ctorName,
 			premises: [b_exp.derivation_tree({ ...this.args.stuff, out_var: b })],
 			conclusion: {
-				source: rule(`\\neg\\ ${b_exp.latex}`, value),
-				rule: rule(`\\neg\\ ${b}`, `${value} =: ${out_var}`)
+				source: rule(`\\neg\\ ${b_exp.latex}`, sigma_in, value),
+				rule: rule(`\\neg\\ ${b}`, sigma_in, `${value} =: ${out_var}`)
 			}
 		};
 	},
@@ -317,6 +359,8 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 	},
 	AExp_add(a1, _, a2) {
 		const { state, var_gen, out_var } = this.args.stuff as Stuff;
+		const sigma_in = state.symbol;
+
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
 		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
@@ -327,14 +371,16 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 				a2.derivation_tree({ ...this.args.stuff, out_var: z_2 })
 			],
 			conclusion: {
-				source: rule(this.latex, value),
-				rule: rule(`${a_1} + ${a_2}`, out_var)
+				source: rule(this.latex, sigma_in, value),
+				rule: rule(`${a_1} + ${a_2}`, sigma_in, out_var)
 			},
 			conditions: [`${out_var} := ${z_1} + ${z_2}`].map(condition)
 		};
 	},
 	AExp_sub(a1, _, a2) {
 		const { state, var_gen, out_var } = this.args.stuff as Stuff;
+		const sigma_in = state.symbol;
+
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z', 'z']);
 		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
@@ -345,14 +391,15 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 				a2.derivation_tree({ ...this.args.stuff, out_var: z_2 })
 			],
 			conclusion: {
-				source: rule(this.latex, value),
-				rule: rule(`${a_1} - ${a_2}`, out_var)
+				source: rule(this.latex, sigma_in, value),
+				rule: rule(`${a_1} - ${a_2}`, sigma_in, out_var)
 			},
 			conditions: [`${out_var} := ${z_1} - ${z_2}`].map(condition)
 		};
 	},
 	AExp_mul(a1, _, a2) {
 		const { state, var_gen, out_var } = this.args.stuff as Stuff;
+		const sigma_in = state.symbol;
 
 		const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
 		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
@@ -364,8 +411,8 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 				a2.derivation_tree({ ...this.args.stuff, out_var: z_2 })
 			],
 			conclusion: {
-				source: rule(this.latex, value),
-				rule: rule(`${a_1} * ${a_2}`, out_var)
+				source: rule(this.latex, sigma_in, value),
+				rule: rule(`${a_1} * ${a_2}`, sigma_in, out_var)
 			},
 			conditions: [`${out_var} := ${z_1} * ${z_2}`].map(condition)
 		};
@@ -378,14 +425,16 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 const bool: Partial<WHILEActionDict<Derivation>> = {
 	bool(arg0) {
 		const { state, out_var } = this.args.stuff as Stuff;
+		const sigma_in = state.symbol;
+
 		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: rule(this.latex, value),
-				rule: rule(this.latex, `${value} =: ${out_var}`)
+				source: rule(this.latex, sigma_in, value),
+				rule: rule(this.latex, sigma_in, `${value} =: ${out_var}`)
 			}
 		};
 	}
@@ -394,14 +443,16 @@ const bool: Partial<WHILEActionDict<Derivation>> = {
 const number: Partial<WHILEActionDict<Derivation>> = {
 	number(arg0) {
 		const { state, out_var } = this.args.stuff as Stuff;
+		const sigma_in = state.symbol;
+
 		const value = this._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
 
 		return {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: rule(this.latex, value),
-				rule: rule(this.latex, `${value} =: ${out_var}`)
+				source: rule(this.latex, sigma_in, value),
+				rule: rule(this.latex, sigma_in, `${value} =: ${out_var}`)
 			}
 		};
 	}
@@ -410,14 +461,16 @@ const number: Partial<WHILEActionDict<Derivation>> = {
 const variable: Partial<WHILEActionDict<Derivation>> = {
 	var(name) {
 		const { out_var, state } = this.args.stuff as Stuff;
+		const sigma_in = state.symbol;
+
 		const value = state.value(name.sourceString);
 
 		return {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: rule(this.latex, `${value}`),
-				rule: rule(this.latex, `\\sigma(${this.latex}) =: ${out_var}`)
+				source: rule(this.latex, sigma_in, `${value}`),
+				rule: rule(this.latex, sigma_in, `\\sigma(${this.latex}) =: ${out_var}`)
 			}
 		};
 	}

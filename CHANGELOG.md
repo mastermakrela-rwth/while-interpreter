@@ -3,6 +3,7 @@
 ## 0.4.0
 
 - updated tex expressions generation to improve readability in derivation trees
+- fixed sigmas (states) numbering in derivation trees & added colors
 
 ## 0.3.0
 
