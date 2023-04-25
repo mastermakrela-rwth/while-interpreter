@@ -150,7 +150,7 @@
 		@apply m-2 border border-white w-full;
 	}
 
-	.transitions {
+	/* .transitions {
 		transition: width 0.5s, left 0.5s, background-color 0.5s;
-	}
+	} */
 </style>

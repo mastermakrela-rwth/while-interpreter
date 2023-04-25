@@ -1,5 +1,9 @@
 # WHILE-interpreter
 
+## 0.4.0
+
+- updated tex expressions generation to improve readability in derivation trees
+
 ## 0.3.0
 
 - added abstract machine code generation

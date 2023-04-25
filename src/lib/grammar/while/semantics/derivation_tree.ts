@@ -118,8 +118,8 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 \text{ end}
 		`;
 		const formatted_source = String.raw`
-\text{while } \color{#a7f3d0} ${tex_string(cond.sourceString)} \color{unset}
-\text{ do } \color{#bae6fd} ${tex_string(body.sourceString)} \color{unset}
+\text{while } \color{#a7f3d0} ${cond.latex} \color{unset}
+\text{ do } \color{#bae6fd} ${body.latex} \color{unset}
 \text{ end}
 		`;
 
@@ -158,9 +158,9 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 \text{ end}
 		`;
 		const formatted_source = String.raw`
-\text{if } \color{#a7f3d0} ${tex_string(cond.sourceString)} \color{unset}
-\text{ then } \color{#bae6fd} ${tex_string(then.sourceString)} \color{unset}
-\text{ else } \color{#f5d0fe} ${tex_string(_else.sourceString)} \color{unset}
+\text{if } \color{#a7f3d0} ${cond.latex} \color{unset}
+\text{ then } \color{#bae6fd} ${then.latex} \color{unset}
+\text{ else } \color{#f5d0fe} ${_else.latex} \color{unset}
 \text{ end}
 		`;
 
@@ -185,9 +185,9 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 		const sigma_out = state.symbol;
 
 		const formatted_source = String.raw`
-\color{#bae6fd} ${tex_string(c_1.sourceString)} \color{unset}
+\color{#bae6fd} ${c_1.latex} \color{unset}
 \text{ ; }
-\color{#f5d0fe} ${tex_string(c_2.sourceString)} \color{unset}
+\color{#f5d0fe} ${c_2.latex} \color{unset}
 		`;
 		``;
 
@@ -243,30 +243,13 @@ const cmd: Partial<WHILEActionDict<Derivation>> = {
 	}
 };
 
-const operator_to_tex: Record<string, string> = {
-	'=': '=',
-	'!=': '\\neq',
-	'<': '<',
-	'<=': '\\leq',
-	'>': '>',
-	'>=': '\\geq',
-	'&&': '\\land',
-	'||': '\\lor',
-	'!': '\\neg'
-};
-
-const tex_string = (str: string) => {
-	Object.entries(operator_to_tex).forEach(([op, tex]) => (str = str.replace(op, tex)));
-	return str;
-};
-
 const interpret_bool = (_this: NonterminalNode, b_exp: NonterminalNode) => {
 	const [a1, operator, a2] = b_exp.children;
 
 	const { var_gen, out_var, state } = _this.args.stuff as Stuff;
 	const [a_1, a_2, z_1, z_2] = var_gen.genList(['a', 'a', 'z', 'z']);
 	const value = b_exp._eval({ vars: { ...state.state }, trace: [], free_vars: [] });
-	let cond = `${z_1} ${operator_to_tex[operator.sourceString]} ${z_2}`;
+	let cond = `${z_1} ${operator.latex} ${z_2}`;
 	if (!value) {
 		cond = `\\neg (${cond})`;
 	}
@@ -277,7 +260,8 @@ const interpret_bool = (_this: NonterminalNode, b_exp: NonterminalNode) => {
 			a2.derivation_tree({ ..._this.args.stuff, out_var: z_2 })
 		],
 		conclusion: {
-			source: rule(tex_string(b_exp.sourceString), value),
+			source: rule(b_exp.latex, value),
+			// source: '',
 			rule: rule(`${a_1} = ${a_2}`, out_var)
 		},
 		conditions: [condition2(cond)]
@@ -301,7 +285,7 @@ const boolean_exp: Partial<WHILEActionDict<Derivation>> = {
 			name: this.ctorName,
 			premises: [b_exp.derivation_tree({ ...this.args.stuff, out_var: b })],
 			conclusion: {
-				source: rule(`\\neg\\ ${b_exp.sourceString}`, value),
+				source: rule(`\\neg\\ ${b_exp.latex}`, value),
 				rule: rule(`\\neg\\ ${b}`, `${value} =: ${out_var}`)
 			}
 		};
@@ -343,7 +327,7 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 				a2.derivation_tree({ ...this.args.stuff, out_var: z_2 })
 			],
 			conclusion: {
-				source: rule(this.sourceString, value),
+				source: rule(this.latex, value),
 				rule: rule(`${a_1} + ${a_2}`, out_var)
 			},
 			conditions: [`${out_var} := ${z_1} + ${z_2}`].map(condition)
@@ -361,7 +345,7 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 				a2.derivation_tree({ ...this.args.stuff, out_var: z_2 })
 			],
 			conclusion: {
-				source: rule(this.sourceString, value),
+				source: rule(this.latex, value),
 				rule: rule(`${a_1} - ${a_2}`, out_var)
 			},
 			conditions: [`${out_var} := ${z_1} - ${z_2}`].map(condition)
@@ -380,7 +364,7 @@ const arithmetic_exp: Partial<WHILEActionDict<Derivation>> = {
 				a2.derivation_tree({ ...this.args.stuff, out_var: z_2 })
 			],
 			conclusion: {
-				source: rule(this.sourceString, value),
+				source: rule(this.latex, value),
 				rule: rule(`${a_1} * ${a_2}`, out_var)
 			},
 			conditions: [`${out_var} := ${z_1} * ${z_2}`].map(condition)
@@ -400,8 +384,8 @@ const bool: Partial<WHILEActionDict<Derivation>> = {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: rule(this.sourceString, value),
-				rule: rule(this.sourceString, `${value} =: ${out_var}`)
+				source: rule(this.latex, value),
+				rule: rule(this.latex, `${value} =: ${out_var}`)
 			}
 		};
 	}
@@ -416,8 +400,8 @@ const number: Partial<WHILEActionDict<Derivation>> = {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: rule(this.sourceString, value),
-				rule: rule(this.sourceString, `${value} =: ${out_var}`)
+				source: rule(this.latex, value),
+				rule: rule(this.latex, `${value} =: ${out_var}`)
 			}
 		};
 	}
@@ -432,8 +416,8 @@ const variable: Partial<WHILEActionDict<Derivation>> = {
 			name: this.ctorName,
 			premises: [],
 			conclusion: {
-				source: rule(this.sourceString, `${value}`),
-				rule: rule(this.sourceString, `\\sigma(${this.sourceString}) =: ${out_var}`)
+				source: rule(this.latex, `${value}`),
+				rule: rule(this.latex, `\\sigma(${this.latex}) =: ${out_var}`)
 			}
 		};
 	}

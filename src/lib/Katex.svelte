@@ -1,9 +1,10 @@
 <script lang="ts">
+	import { dev } from '$app/environment';
 	import katex from 'katex';
 	export let math: string;
 	export let displayMode = false;
 
-	const options = { displayMode, throwOnError: false };
+	const options = { displayMode, throwOnError: dev };
 
 	$: katexString = katex.renderToString(math, options);
 </script>

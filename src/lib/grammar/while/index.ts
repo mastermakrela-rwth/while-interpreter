@@ -4,6 +4,7 @@ import { derivation_tree_operations } from './semantics/derivation_tree';
 import { eval_operations } from './semantics/eval';
 import { free_variables_operations } from './semantics/free_variables';
 import { machine_code_operations } from './semantics/machine_code';
+import { latex_attributes } from './semantics/latex';
 
 const semantics = grammar.createSemantics();
 
@@ -11,6 +12,8 @@ eval_operations.forEach(({ name, actions }) => semantics.addOperation(name, acti
 free_variables_operations.forEach(({ name, actions }) => semantics.addOperation(name, actions));
 derivation_tree_operations.forEach(({ name, actions }) => semantics.addOperation(name, actions));
 machine_code_operations.forEach(({ name, actions }) => semantics.addOperation(name, actions));
+
+latex_attributes.forEach(({ name, actions }) => semantics.addAttribute(name, actions));
 
 export const parse_while = (program: string) => {
 	const m = grammar.match(program);
