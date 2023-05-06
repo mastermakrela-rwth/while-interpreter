@@ -4,10 +4,17 @@
 	export let defaults: string[];
 	export let free_variables: Record<string, number | null>;
 
-	free_variables = defaults.reduce<Record<string, number>>((acc, name) => {
-		acc[name] = free_variables[name] ?? 0;
-		return acc;
-	}, {});
+	// free_variables = defaults.reduce<Record<string, number>>((acc, name) => {
+	// 	acc[name] = free_variables[name] ?? 0;
+	// 	return acc;
+	// }, {});
+
+	$: if (defaults) {
+		free_variables = defaults.reduce<Record<string, number>>((acc, name) => {
+			acc[name] = free_variables[name] ?? 0;
+			return acc;
+		}, {});
+	}
 </script>
 
 <div class="my-4 grid grid-cols-1 md:grid-cols-3 gap-4 justify-items-center">

@@ -22,13 +22,17 @@ class Program {
 				const tab_count = Math.ceil((longest - line.length) / 3) + 1;
 				_line += '\t'.repeat(tab_count);
 
+				_line += `/* `;
+
 				if (line_numbers) {
-					_line += `# (Line ${i + 1})`;
+					_line += `(Line ${i + 1})`;
 				}
 
 				if (comments && this.comments[i]) {
 					_line += `\t${this.comments[i].join('\t')}`;
 				}
+
+				_line += ` */`;
 
 				return _line;
 			})
@@ -36,7 +40,9 @@ class Program {
 	}
 
 	addLine(line: string) {
-		this.lines.push(line);
+		const lines = line.split('\n');
+		this.lines.push(...lines);
+		// this.lines.push(line);
 	}
 
 	updateLine(line: number, new_line: string) {
@@ -135,9 +141,9 @@ const boolean_op_key: Record<string, [string, string]> = {
 	'=': ['eq', 'EQ'],
 	'>': ['gt', 'GT'],
 	// TODO: replace with variants of ">"
-	'<': ['lt', 'LT'],
-	'>=': ['geq', 'GEQ'],
-	'<=': ['leq', 'LEQ']
+	'<': ['lt', 'GT\nNOT'],
+	'>=': ['geq', 'PUSH( 1 )\nSUB\nGT'],
+	'<=': ['leq', 'PUSH( 1 )\nSUB\nGT\nNOT']
 };
 
 const boolean_exp: Partial<WHILEActionDict<MachineCode>> = {

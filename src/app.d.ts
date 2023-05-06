@@ -24,13 +24,18 @@ declare global {
 		import('./lib/grammar/abstract_machine/definitions/abstract_machine.ohm-bundle.d.ts').ABSTRACT_MACHINEActionDict<T>;
 
 	type ExecutionConfiguration =
-		import('./lib/grammar/abstract_machine/semantics/execute.ts').ExecutionConfiguration;
+		import('./lib/grammar/abstract_machine/semantics/compile').ExecutionConfiguration;
 
 	type MachineCode = string;
 
 	type SemanticsOperation<T> = {
 		name: string;
 		actions: WHILEActionDict<T>;
+	};
+
+	type SemanticsOperationAM<T> = {
+		name: string;
+		actions: ABSTRACT_MACHINEActionDict<T>;
 	};
 
 	type Vars = Record<string, number | null>;
@@ -54,6 +59,25 @@ declare global {
 			rule: string;
 		};
 		conditions?: string[];
+	};
+
+	// MARK: - Abstract Machine
+	type ExecutionConfiguration = {
+		program_counter: number;
+		stack: (number | boolean)[];
+		state: Record<string, number>;
+	};
+
+	type CompiledAM = {
+		line_count: number;
+		lines: CompiledLine[];
+	};
+
+	type CompiledLine = {
+		operation: string;
+		line_number: number;
+		constraints: ((config: ExecutionConfiguration) => void)[];
+		apply: (config: ExecutionConfiguration) => ExecutionConfiguration;
 	};
 }
 

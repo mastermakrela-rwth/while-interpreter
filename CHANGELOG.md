@@ -1,9 +1,14 @@
 # WHILE-interpreter
 
+## 0.5.0
+
+- added Abstract Machine code generation
+- added Abstract Machine execution with trace
+
 ## 0.4.0
 
 - updated tex expressions generation to improve readability in derivation trees
-- fixed sigmas (states) numbering in derivation trees & added colors
+- [fix] fixed sigmas (states) numbering in derivation trees & added colors
 
 ## 0.3.0
 

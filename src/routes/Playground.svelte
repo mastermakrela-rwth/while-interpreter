@@ -98,7 +98,9 @@
 
 <Derivation {derivation_result} />
 
-<MachineCodeEditor {machine_code_result} />
+{#if machine_code_result}
+	<MachineCodeEditor {machine_code_result} {default_values} />
+{/if}
 
 <style lang="postcss">
 	.error::before {

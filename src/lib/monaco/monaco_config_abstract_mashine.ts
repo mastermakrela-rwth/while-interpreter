@@ -51,10 +51,19 @@ const am_lang_definition: monaco.languages.IMonarchLanguage = {
 			]
 		],
 
+		comment: [
+			[/[^\/*]+/, 'comment'],
+			[/\/\*/, 'comment', '@push'], // nested comment
+			['\\*/', 'comment', '@pop'],
+			[/[\/*]/, 'comment']
+		],
+
 		// Deal with white space, including single and multi-line comments
 		whitespace: [
 			[/\s+/, 'white'],
 			[/(^#.*$)/, 'comment'],
+			[/\/\*/, 'comment', '@comment'],
+			[/\/\/.*$/, 'comment'],
 			[/('''.*''')|(""".*""")/, 'string'],
 			[/'''.*$/, 'string', '@endDocString'],
 			[/""".*$/, 'string', '@endDblDocString']

@@ -3,283 +3,340 @@ const result = makeRecipe([
 	'grammar',
 	{
 		source:
-			'ABSTRACT_MACHINE {\n\tProgram = Instruction ";" Program \t-- sequence\n\t\t| Instruction\t\t\t\t\t-- instruction\n\n\tInstruction\n\t\t= "PUSH" "(" number ")"\t-- push_number\n\t\t| "PUSH" "(" bool ")"\t-- push_bool\n\t\t| "ADD"\t\t \t\t\t-- add\n\t\t| "SUB" \t\t\t\t-- sub\n\t\t| "MULT" \t\t\t\t-- mult\n\t\t| "EQ" \t\t\t\t\t-- eq\n\t\t| "GT" \t\t\t\t\t-- gt\n\t\t| "NOT" \t\t\t\t-- not\n\t\t| "AND" \t\t\t\t-- and\n\t\t| "OR" \t\t\t\t\t-- or\n\t\t| "LOAD" "(" var ")" \t-- load\n\t\t| "STO" "(" var ")" \t-- store\n\t\t| "JMP" "(" number ")" \t-- jump\n\t\t| "JMPF" "(" number ")"\t-- jump_if_false\n\n\tbool (a bool value)\n\t\t= "true" ~var\n\t\t| "false" ~var\n\n\tvar  (a variable)\n\t\t= letter+\n\n\tnumber\t(positive and negative integers)\n\t\t= "-" digit+\t-- negative\n\t\t| digit+\t\t-- positive\n}'
+			'ABSTRACT_MACHINE {\n\tStart\n\t\t= Program\n\n\tProgram = Instruction Program \t-- sequence\n\t\t| Instruction\t\t\t\t-- instruction\n\n\tInstruction\n\t\t= "PUSH" "(" number ")"\t-- push_number\n\t\t| "PUSH" "(" bool ")"\t-- push_bool\n\t\t| operation\t\t\t\t-- operation\n\t\t| "LOAD" "(" var ")" \t-- load\n\t\t| "STO" "(" var ")" \t-- store\n\t\t| "JMP" "(" number ")" \t-- jump\n\t\t| "JMPF" "(" number ")"\t-- jump_if_false\n\n\toperation\n\t\t= "ADD"\t\t-- add\n\t\t| "SUB" \t-- sub\n\t\t| "MULT" \t-- mult\n\t\t| "EQ" \t\t-- eq\n\t\t| "GT" \t\t-- gt\n\t\t| "NOT" \t-- not\n\t\t| "AND" \t-- and\n\t\t| "OR" \t\t-- or\n\n\tbool (a bool value)\n\t\t= "true" ~var\n\t\t| "false" ~var\n\n\tvar  (a variable)\n\t\t= letter+\n\n\tnumber\t(positive and negative integers)\n\t\t= "-" digit+\t-- negative\n\t\t| digit+\t\t-- positive\n\n\tcomment = "/*" (~"*/" any)* "*/"\n\tspace += comment\n}'
 	},
 	'ABSTRACT_MACHINE',
 	null,
-	'Program',
+	'Start',
 	{
+		Start: [
+			'define',
+			{ sourceInterval: [20, 37] },
+			null,
+			[],
+			['app', { sourceInterval: [30, 37] }, 'Program', []]
+		],
 		Program_sequence: [
 			'define',
-			{ sourceInterval: [30, 66] },
+			{ sourceInterval: [50, 82] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [30, 53] },
-				['app', { sourceInterval: [30, 41] }, 'Instruction', []],
-				['terminal', { sourceInterval: [42, 45] }, ';'],
-				['app', { sourceInterval: [46, 53] }, 'Program', []]
+				{ sourceInterval: [50, 69] },
+				['app', { sourceInterval: [50, 61] }, 'Instruction', []],
+				['app', { sourceInterval: [62, 69] }, 'Program', []]
 			]
 		],
 		Program_instruction: [
 			'define',
-			{ sourceInterval: [71, 101] },
+			{ sourceInterval: [87, 116] },
 			null,
 			[],
-			['app', { sourceInterval: [71, 82] }, 'Instruction', []]
+			['app', { sourceInterval: [87, 98] }, 'Instruction', []]
 		],
 		Program: [
 			'define',
-			{ sourceInterval: [20, 101] },
+			{ sourceInterval: [40, 116] },
 			null,
 			[],
 			[
 				'alt',
-				{ sourceInterval: [30, 101] },
-				['app', { sourceInterval: [30, 53] }, 'Program_sequence', []],
-				['app', { sourceInterval: [71, 82] }, 'Program_instruction', []]
+				{ sourceInterval: [50, 116] },
+				['app', { sourceInterval: [50, 69] }, 'Program_sequence', []],
+				['app', { sourceInterval: [87, 98] }, 'Program_instruction', []]
 			]
 		],
 		Instruction_push_number: [
 			'define',
-			{ sourceInterval: [120, 156] },
+			{ sourceInterval: [135, 171] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [120, 141] },
-				['terminal', { sourceInterval: [120, 126] }, 'PUSH'],
-				['terminal', { sourceInterval: [127, 130] }, '('],
-				['app', { sourceInterval: [131, 137] }, 'number', []],
-				['terminal', { sourceInterval: [138, 141] }, ')']
+				{ sourceInterval: [135, 156] },
+				['terminal', { sourceInterval: [135, 141] }, 'PUSH'],
+				['terminal', { sourceInterval: [142, 145] }, '('],
+				['app', { sourceInterval: [146, 152] }, 'number', []],
+				['terminal', { sourceInterval: [153, 156] }, ')']
 			]
 		],
 		Instruction_push_bool: [
 			'define',
-			{ sourceInterval: [161, 193] },
+			{ sourceInterval: [176, 208] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [161, 180] },
-				['terminal', { sourceInterval: [161, 167] }, 'PUSH'],
-				['terminal', { sourceInterval: [168, 171] }, '('],
-				['app', { sourceInterval: [172, 176] }, 'bool', []],
-				['terminal', { sourceInterval: [177, 180] }, ')']
+				{ sourceInterval: [176, 195] },
+				['terminal', { sourceInterval: [176, 182] }, 'PUSH'],
+				['terminal', { sourceInterval: [183, 186] }, '('],
+				['app', { sourceInterval: [187, 191] }, 'bool', []],
+				['terminal', { sourceInterval: [192, 195] }, ')']
 			]
 		],
-		Instruction_add: [
+		Instruction_operation: [
 			'define',
-			{ sourceInterval: [198, 215] },
+			{ sourceInterval: [213, 238] },
 			null,
 			[],
-			['terminal', { sourceInterval: [198, 203] }, 'ADD']
-		],
-		Instruction_sub: [
-			'define',
-			{ sourceInterval: [220, 236] },
-			null,
-			[],
-			['terminal', { sourceInterval: [220, 225] }, 'SUB']
-		],
-		Instruction_mult: [
-			'define',
-			{ sourceInterval: [241, 259] },
-			null,
-			[],
-			['terminal', { sourceInterval: [241, 247] }, 'MULT']
-		],
-		Instruction_eq: [
-			'define',
-			{ sourceInterval: [264, 279] },
-			null,
-			[],
-			['terminal', { sourceInterval: [264, 268] }, 'EQ']
-		],
-		Instruction_gt: [
-			'define',
-			{ sourceInterval: [284, 299] },
-			null,
-			[],
-			['terminal', { sourceInterval: [284, 288] }, 'GT']
-		],
-		Instruction_not: [
-			'define',
-			{ sourceInterval: [304, 320] },
-			null,
-			[],
-			['terminal', { sourceInterval: [304, 309] }, 'NOT']
-		],
-		Instruction_and: [
-			'define',
-			{ sourceInterval: [325, 341] },
-			null,
-			[],
-			['terminal', { sourceInterval: [325, 330] }, 'AND']
-		],
-		Instruction_or: [
-			'define',
-			{ sourceInterval: [346, 361] },
-			null,
-			[],
-			['terminal', { sourceInterval: [346, 350] }, 'OR']
+			['app', { sourceInterval: [213, 222] }, 'operation', []]
 		],
 		Instruction_load: [
 			'define',
-			{ sourceInterval: [366, 393] },
+			{ sourceInterval: [243, 270] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [366, 384] },
-				['terminal', { sourceInterval: [366, 372] }, 'LOAD'],
-				['terminal', { sourceInterval: [373, 376] }, '('],
-				['app', { sourceInterval: [377, 380] }, 'var', []],
-				['terminal', { sourceInterval: [381, 384] }, ')']
+				{ sourceInterval: [243, 261] },
+				['terminal', { sourceInterval: [243, 249] }, 'LOAD'],
+				['terminal', { sourceInterval: [250, 253] }, '('],
+				['app', { sourceInterval: [254, 257] }, 'var', []],
+				['terminal', { sourceInterval: [258, 261] }, ')']
 			]
 		],
 		Instruction_store: [
 			'define',
-			{ sourceInterval: [398, 425] },
+			{ sourceInterval: [275, 302] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [398, 415] },
-				['terminal', { sourceInterval: [398, 403] }, 'STO'],
-				['terminal', { sourceInterval: [404, 407] }, '('],
-				['app', { sourceInterval: [408, 411] }, 'var', []],
-				['terminal', { sourceInterval: [412, 415] }, ')']
+				{ sourceInterval: [275, 292] },
+				['terminal', { sourceInterval: [275, 280] }, 'STO'],
+				['terminal', { sourceInterval: [281, 284] }, '('],
+				['app', { sourceInterval: [285, 288] }, 'var', []],
+				['terminal', { sourceInterval: [289, 292] }, ')']
 			]
 		],
 		Instruction_jump: [
 			'define',
-			{ sourceInterval: [430, 459] },
+			{ sourceInterval: [307, 336] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [430, 450] },
-				['terminal', { sourceInterval: [430, 435] }, 'JMP'],
-				['terminal', { sourceInterval: [436, 439] }, '('],
-				['app', { sourceInterval: [440, 446] }, 'number', []],
-				['terminal', { sourceInterval: [447, 450] }, ')']
+				{ sourceInterval: [307, 327] },
+				['terminal', { sourceInterval: [307, 312] }, 'JMP'],
+				['terminal', { sourceInterval: [313, 316] }, '('],
+				['app', { sourceInterval: [317, 323] }, 'number', []],
+				['terminal', { sourceInterval: [324, 327] }, ')']
 			]
 		],
 		Instruction_jump_if_false: [
 			'define',
-			{ sourceInterval: [464, 502] },
+			{ sourceInterval: [341, 379] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [464, 485] },
-				['terminal', { sourceInterval: [464, 470] }, 'JMPF'],
-				['terminal', { sourceInterval: [471, 474] }, '('],
-				['app', { sourceInterval: [475, 481] }, 'number', []],
-				['terminal', { sourceInterval: [482, 485] }, ')']
+				{ sourceInterval: [341, 362] },
+				['terminal', { sourceInterval: [341, 347] }, 'JMPF'],
+				['terminal', { sourceInterval: [348, 351] }, '('],
+				['app', { sourceInterval: [352, 358] }, 'number', []],
+				['terminal', { sourceInterval: [359, 362] }, ')']
 			]
 		],
 		Instruction: [
 			'define',
-			{ sourceInterval: [104, 502] },
+			{ sourceInterval: [119, 379] },
 			null,
 			[],
 			[
 				'alt',
-				{ sourceInterval: [120, 502] },
-				['app', { sourceInterval: [120, 141] }, 'Instruction_push_number', []],
-				['app', { sourceInterval: [161, 180] }, 'Instruction_push_bool', []],
-				['app', { sourceInterval: [198, 203] }, 'Instruction_add', []],
-				['app', { sourceInterval: [220, 225] }, 'Instruction_sub', []],
-				['app', { sourceInterval: [241, 247] }, 'Instruction_mult', []],
-				['app', { sourceInterval: [264, 268] }, 'Instruction_eq', []],
-				['app', { sourceInterval: [284, 288] }, 'Instruction_gt', []],
-				['app', { sourceInterval: [304, 309] }, 'Instruction_not', []],
-				['app', { sourceInterval: [325, 330] }, 'Instruction_and', []],
-				['app', { sourceInterval: [346, 350] }, 'Instruction_or', []],
-				['app', { sourceInterval: [366, 384] }, 'Instruction_load', []],
-				['app', { sourceInterval: [398, 415] }, 'Instruction_store', []],
-				['app', { sourceInterval: [430, 450] }, 'Instruction_jump', []],
-				['app', { sourceInterval: [464, 485] }, 'Instruction_jump_if_false', []]
+				{ sourceInterval: [135, 379] },
+				['app', { sourceInterval: [135, 156] }, 'Instruction_push_number', []],
+				['app', { sourceInterval: [176, 195] }, 'Instruction_push_bool', []],
+				['app', { sourceInterval: [213, 222] }, 'Instruction_operation', []],
+				['app', { sourceInterval: [243, 261] }, 'Instruction_load', []],
+				['app', { sourceInterval: [275, 292] }, 'Instruction_store', []],
+				['app', { sourceInterval: [307, 327] }, 'Instruction_jump', []],
+				['app', { sourceInterval: [341, 362] }, 'Instruction_jump_if_false', []]
+			]
+		],
+		operation_add: [
+			'define',
+			{ sourceInterval: [396, 409] },
+			null,
+			[],
+			['terminal', { sourceInterval: [396, 401] }, 'ADD']
+		],
+		operation_sub: [
+			'define',
+			{ sourceInterval: [414, 427] },
+			null,
+			[],
+			['terminal', { sourceInterval: [414, 419] }, 'SUB']
+		],
+		operation_mult: [
+			'define',
+			{ sourceInterval: [432, 447] },
+			null,
+			[],
+			['terminal', { sourceInterval: [432, 438] }, 'MULT']
+		],
+		operation_eq: [
+			'define',
+			{ sourceInterval: [452, 464] },
+			null,
+			[],
+			['terminal', { sourceInterval: [452, 456] }, 'EQ']
+		],
+		operation_gt: [
+			'define',
+			{ sourceInterval: [469, 481] },
+			null,
+			[],
+			['terminal', { sourceInterval: [469, 473] }, 'GT']
+		],
+		operation_not: [
+			'define',
+			{ sourceInterval: [486, 499] },
+			null,
+			[],
+			['terminal', { sourceInterval: [486, 491] }, 'NOT']
+		],
+		operation_and: [
+			'define',
+			{ sourceInterval: [504, 517] },
+			null,
+			[],
+			['terminal', { sourceInterval: [504, 509] }, 'AND']
+		],
+		operation_or: [
+			'define',
+			{ sourceInterval: [522, 534] },
+			null,
+			[],
+			['terminal', { sourceInterval: [522, 526] }, 'OR']
+		],
+		operation: [
+			'define',
+			{ sourceInterval: [382, 534] },
+			null,
+			[],
+			[
+				'alt',
+				{ sourceInterval: [396, 534] },
+				['app', { sourceInterval: [396, 401] }, 'operation_add', []],
+				['app', { sourceInterval: [414, 419] }, 'operation_sub', []],
+				['app', { sourceInterval: [432, 438] }, 'operation_mult', []],
+				['app', { sourceInterval: [452, 456] }, 'operation_eq', []],
+				['app', { sourceInterval: [469, 473] }, 'operation_gt', []],
+				['app', { sourceInterval: [486, 491] }, 'operation_not', []],
+				['app', { sourceInterval: [504, 509] }, 'operation_and', []],
+				['app', { sourceInterval: [522, 526] }, 'operation_or', []]
 			]
 		],
 		bool: [
 			'define',
-			{ sourceInterval: [505, 557] },
+			{ sourceInterval: [537, 589] },
 			'a bool value',
 			[],
 			[
 				'alt',
-				{ sourceInterval: [529, 557] },
+				{ sourceInterval: [561, 589] },
 				[
 					'seq',
-					{ sourceInterval: [529, 540] },
-					['terminal', { sourceInterval: [529, 535] }, 'true'],
+					{ sourceInterval: [561, 572] },
+					['terminal', { sourceInterval: [561, 567] }, 'true'],
 					[
 						'not',
-						{ sourceInterval: [536, 540] },
-						['app', { sourceInterval: [537, 540] }, 'var', []]
+						{ sourceInterval: [568, 572] },
+						['app', { sourceInterval: [569, 572] }, 'var', []]
 					]
 				],
 				[
 					'seq',
-					{ sourceInterval: [545, 557] },
-					['terminal', { sourceInterval: [545, 552] }, 'false'],
+					{ sourceInterval: [577, 589] },
+					['terminal', { sourceInterval: [577, 584] }, 'false'],
 					[
 						'not',
-						{ sourceInterval: [553, 557] },
-						['app', { sourceInterval: [554, 557] }, 'var', []]
+						{ sourceInterval: [585, 589] },
+						['app', { sourceInterval: [586, 589] }, 'var', []]
 					]
 				]
 			]
 		],
 		var: [
 			'define',
-			{ sourceInterval: [560, 589] },
+			{ sourceInterval: [592, 621] },
 			'a variable',
 			[],
 			[
 				'plus',
-				{ sourceInterval: [582, 589] },
-				['app', { sourceInterval: [582, 588] }, 'letter', []]
+				{ sourceInterval: [614, 621] },
+				['app', { sourceInterval: [614, 620] }, 'letter', []]
 			]
 		],
 		number_negative: [
 			'define',
-			{ sourceInterval: [636, 658] },
+			{ sourceInterval: [668, 690] },
 			null,
 			[],
 			[
 				'seq',
-				{ sourceInterval: [636, 646] },
-				['terminal', { sourceInterval: [636, 639] }, '-'],
+				{ sourceInterval: [668, 678] },
+				['terminal', { sourceInterval: [668, 671] }, '-'],
 				[
 					'plus',
-					{ sourceInterval: [640, 646] },
-					['app', { sourceInterval: [640, 645] }, 'digit', []]
+					{ sourceInterval: [672, 678] },
+					['app', { sourceInterval: [672, 677] }, 'digit', []]
 				]
 			]
 		],
 		number_positive: [
 			'define',
-			{ sourceInterval: [663, 682] },
+			{ sourceInterval: [695, 714] },
 			null,
 			[],
-			['plus', { sourceInterval: [663, 669] }, ['app', { sourceInterval: [663, 668] }, 'digit', []]]
+			['plus', { sourceInterval: [695, 701] }, ['app', { sourceInterval: [695, 700] }, 'digit', []]]
 		],
 		number: [
 			'define',
-			{ sourceInterval: [592, 682] },
+			{ sourceInterval: [624, 714] },
 			'positive and negative integers',
 			[],
 			[
 				'alt',
-				{ sourceInterval: [636, 682] },
-				['app', { sourceInterval: [636, 646] }, 'number_negative', []],
-				['app', { sourceInterval: [663, 669] }, 'number_positive', []]
+				{ sourceInterval: [668, 714] },
+				['app', { sourceInterval: [668, 678] }, 'number_negative', []],
+				['app', { sourceInterval: [695, 701] }, 'number_positive', []]
 			]
+		],
+		comment: [
+			'define',
+			{ sourceInterval: [717, 749] },
+			null,
+			[],
+			[
+				'seq',
+				{ sourceInterval: [727, 749] },
+				['terminal', { sourceInterval: [727, 731] }, '/*'],
+				[
+					'star',
+					{ sourceInterval: [732, 744] },
+					[
+						'seq',
+						{ sourceInterval: [733, 742] },
+						[
+							'not',
+							{ sourceInterval: [733, 738] },
+							['terminal', { sourceInterval: [734, 738] }, '*/']
+						],
+						['app', { sourceInterval: [739, 742] }, 'any', []]
+					]
+				],
+				['terminal', { sourceInterval: [745, 749] }, '*/']
+			]
+		],
+		space: [
+			'extend',
+			{ sourceInterval: [751, 767] },
+			null,
+			[],
+			['app', { sourceInterval: [760, 767] }, 'comment', []]
 		]
 	}
 ]);

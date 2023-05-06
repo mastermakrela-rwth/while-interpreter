@@ -12,12 +12,8 @@ import {
 } from 'ohm-js';
 
 export interface ABSTRACT_MACHINEActionDict<T> extends BaseActionDict<T> {
-	Program_sequence?: (
-		this: NonterminalNode,
-		arg0: NonterminalNode,
-		arg1: TerminalNode,
-		arg2: NonterminalNode
-	) => T;
+	Start?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+	Program_sequence?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
 	Program_instruction?: (this: NonterminalNode, arg0: NonterminalNode) => T;
 	Program?: (this: NonterminalNode, arg0: NonterminalNode) => T;
 	Instruction_push_number?: (
@@ -34,14 +30,7 @@ export interface ABSTRACT_MACHINEActionDict<T> extends BaseActionDict<T> {
 		arg2: NonterminalNode,
 		arg3: TerminalNode
 	) => T;
-	Instruction_add?: (this: NonterminalNode, arg0: TerminalNode) => T;
-	Instruction_sub?: (this: NonterminalNode, arg0: TerminalNode) => T;
-	Instruction_mult?: (this: NonterminalNode, arg0: TerminalNode) => T;
-	Instruction_eq?: (this: NonterminalNode, arg0: TerminalNode) => T;
-	Instruction_gt?: (this: NonterminalNode, arg0: TerminalNode) => T;
-	Instruction_not?: (this: NonterminalNode, arg0: TerminalNode) => T;
-	Instruction_and?: (this: NonterminalNode, arg0: TerminalNode) => T;
-	Instruction_or?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	Instruction_operation?: (this: NonterminalNode, arg0: NonterminalNode) => T;
 	Instruction_load?: (
 		this: NonterminalNode,
 		arg0: TerminalNode,
@@ -71,11 +60,27 @@ export interface ABSTRACT_MACHINEActionDict<T> extends BaseActionDict<T> {
 		arg3: TerminalNode
 	) => T;
 	Instruction?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+	operation_add?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation_sub?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation_mult?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation_eq?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation_gt?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation_not?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation_and?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation_or?: (this: NonterminalNode, arg0: TerminalNode) => T;
+	operation?: (this: NonterminalNode, arg0: NonterminalNode) => T;
 	bool?: (this: NonterminalNode, arg0: TerminalNode) => T;
 	var?: (this: NonterminalNode, arg0: IterationNode) => T;
 	number_negative?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode) => T;
 	number_positive?: (this: NonterminalNode, arg0: IterationNode) => T;
 	number?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+	comment?: (
+		this: NonterminalNode,
+		arg0: TerminalNode,
+		arg1: IterationNode,
+		arg2: TerminalNode
+	) => T;
+	space?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode) => T;
 }
 
 export interface ABSTRACT_MACHINESemantics extends Semantics {

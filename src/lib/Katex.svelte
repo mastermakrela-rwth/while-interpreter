@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { dev } from '$app/environment';
-	import katex from 'katex';
+	import katex, { type KatexOptions } from 'katex';
 	export let math: string;
 	export let displayMode = false;
 
-	const options = { displayMode, throwOnError: dev };
+	const options: KatexOptions = { displayMode, throwOnError: dev, maxExpand: Infinity };
 
 	$: katexString = katex.renderToString(math, options);
 </script>
@@ -18,7 +18,7 @@
 	/>
 </svelte:head>
 
-<span class="text-lg text-gray-300">
+<span class="text-gray-300">
 	{@html katexString}
 </span>
 

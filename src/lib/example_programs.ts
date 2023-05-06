@@ -78,5 +78,18 @@ while !(x=1) do
 	x := x -1
 end
 `
+	},
+	{
+		name: 'AM Example',
+		initial_state: { x: 10, y: 3 },
+		code: `
+z := 0;
+r := x;
+
+while r >= y do
+	r := r - y;
+	z := z + 1
+end
+`
 	}
 ];

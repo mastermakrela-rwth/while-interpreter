@@ -38,7 +38,7 @@ const latex_semantics: SemanticsOperation<string> = {
 		...arithmetic_exp,
 		_nonterminal(...children) {
 			let separator = '';
-			if (this.ctorName.startsWith('BExp_')) {
+			if (this.ctorName.includes('BExp_')) {
 				separator = ' ';
 			}
 

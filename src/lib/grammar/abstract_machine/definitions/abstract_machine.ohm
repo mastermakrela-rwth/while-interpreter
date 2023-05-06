@@ -1,22 +1,28 @@
 ABSTRACT_MACHINE {
-	Program = Instruction ";" Program 	-- sequence
-		| Instruction					-- instruction
+	Start
+		= Program
+
+	Program = Instruction Program 	-- sequence
+		| Instruction				-- instruction
 
 	Instruction
 		= "PUSH" "(" number ")"	-- push_number
 		| "PUSH" "(" bool ")"	-- push_bool
-		| "ADD"		 			-- add
-		| "SUB" 				-- sub
-		| "MULT" 				-- mult
-		| "EQ" 					-- eq
-		| "GT" 					-- gt
-		| "NOT" 				-- not
-		| "AND" 				-- and
-		| "OR" 					-- or
+		| operation				-- operation
 		| "LOAD" "(" var ")" 	-- load
 		| "STO" "(" var ")" 	-- store
 		| "JMP" "(" number ")" 	-- jump
 		| "JMPF" "(" number ")"	-- jump_if_false
+
+	operation
+		= "ADD"		-- add
+		| "SUB" 	-- sub
+		| "MULT" 	-- mult
+		| "NOT" 	-- not
+		| "EQ" 		-- eq
+		| "GT" 		-- gt
+		| "AND" 	-- and
+		| "OR" 		-- or
 
 	bool (a bool value)
 		= "true" ~var
@@ -28,4 +34,7 @@ ABSTRACT_MACHINE {
 	number	(positive and negative integers)
 		= "-" digit+	-- negative
 		| digit+		-- positive
+
+	comment = "/*" (~"*/" any)* "*/"
+	space += comment
 }
