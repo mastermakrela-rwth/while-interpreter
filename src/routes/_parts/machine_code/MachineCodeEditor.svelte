@@ -46,7 +46,9 @@
 
 		{#if compiled}
 			{#key compiled}
-				<ExecutionStepper program={compiled} {default_values} />
+				{#key default_values}
+					<ExecutionStepper program={compiled} {default_values} />
+				{/key}
 			{/key}
 		{/if}
 	{/if}

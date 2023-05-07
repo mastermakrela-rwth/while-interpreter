@@ -1,5 +1,9 @@
 # WHILE-interpreter
 
+## 0.5.1
+
+- [fix] AM result didn't refresh when free variables changed
+
 ## 0.5.0
 
 - added Abstract Machine code generation
