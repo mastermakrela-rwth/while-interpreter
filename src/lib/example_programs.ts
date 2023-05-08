@@ -91,5 +91,17 @@ while r >= y do
 	z := z + 1
 end
 `
+	},
+	{
+		name: 'Factorial',
+		initial_state: { x: 3 },
+		code: `
+y:=1; 
+
+while !(x=1) do
+    y:=y*x;
+    x:=x-1
+end
+`
 	}
 ];

@@ -140,7 +140,6 @@ const boolean_op_key: Record<string, [string, string]> = {
 	'!': ['not', 'NOT'],
 	'=': ['eq', 'EQ'],
 	'>': ['gt', 'GT'],
-	// TODO: replace with variants of ">"
 	'<': ['lt', 'GT\nNOT'],
 	'>=': ['geq', 'PUSH( 1 )\nSUB\nGT'],
 	'<=': ['leq', 'PUSH( 1 )\nSUB\nGT\nNOT']

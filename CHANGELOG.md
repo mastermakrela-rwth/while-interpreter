@@ -1,5 +1,9 @@
 # WHILE-interpreter
 
+## 0.5.2
+
+- added factorial example program
+
 ## 0.5.1
 
 - [fix] AM result didn't refresh when free variables changed
