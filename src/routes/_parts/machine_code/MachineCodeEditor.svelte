@@ -32,7 +32,7 @@
 	{#if machine_code_result}
 		{#if !machine_code_result.success}
 			{@const mc_error = machine_code_result.message}
-			<div class="error" transition:slide>
+			<div class="error" transition:slide|global>
 				<span class="font-semibold block mb-1">Error!</span>
 				<span> {mc_error} </span>
 			</div>

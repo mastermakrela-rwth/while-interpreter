@@ -66,7 +66,7 @@
 	</div>
 
 	{#if contains_while}
-		<div class="disclaimer" transition:fade>
+		<div class="disclaimer" transition:fade|global>
 			<span class="font-semibold block mb-1">Disclaimer!</span>
 			<span>
 				Your program contains the <code>while</code> loop. We can't determine if your program will terminate,
@@ -77,14 +77,14 @@
 	{/if}
 
 	{#if !parsed.success}
-		<div transition:slide>
+		<div transition:slide|global>
 			<h3>Something went wrong!</h3>
 			<pre class="error">{parsed.message}</pre>
 		</div>
 	{/if}
 
 	{#if free_variables.length > 0}
-		<div transition:fade>
+		<div transition:fade|global>
 			<h4>Free Variables</h4>
 
 			{#key free_variables.join('@')}

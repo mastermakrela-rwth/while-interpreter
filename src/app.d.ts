@@ -53,7 +53,7 @@ declare global {
 
 	type Derivation = {
 		name: string;
-		premises: string[];
+		premises: Derivation[];
 		conclusion: {
 			source: string;
 			rule: string;

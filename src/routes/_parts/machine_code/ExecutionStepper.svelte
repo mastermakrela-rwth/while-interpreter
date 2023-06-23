@@ -181,7 +181,7 @@
 </div>
 
 {#if error}
-	<div transition:slide>
+	<div transition:slide|global>
 		<h3>Something went wrong!</h3>
 		<pre class="error">{error}</pre>
 	</div>

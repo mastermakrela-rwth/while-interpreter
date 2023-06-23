@@ -42,7 +42,7 @@
 		</div>
 
 		{#if show_trace}
-			<div transition:slide={{ duration: 1000 }}>
+			<div transition:slide|global={{ duration: 1000 }}>
 				<Trace show_steps {trace} />
 			</div>
 		{/if}

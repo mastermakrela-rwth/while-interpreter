@@ -1,5 +1,9 @@
 # WHILE-interpreter
 
+## 0.5.3
+
+- updated to Svelte 4
+
 ## 0.5.2
 
 - added factorial example program
